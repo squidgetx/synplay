@@ -20,6 +20,24 @@ public class Master {
                 false);
         din = AudioSystem.getAudioInputStream(decodedFormat, in);
 
+        // test
+        /*
+        AudioFormat format = din.getFormat();
+        DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
+        SourceDataLine audioLine = (SourceDataLine) AudioSystem.getLine(info);
+        audioLine.open(format);
+        audioLine.start();
+
+        int BUFSIZE = 4096;
+        byte[] buffer = new byte[BUFSIZE];
+        int read = -1;
+
+        while ((read = din.read(buffer)) != -1) {
+          audioLine.write(buffer, 0, read);
+        }
+        */
+        
+
         int PACKET_SIZE = 1024;
         byte[] audioSegment = new byte[PACKET_SIZE];
 
@@ -30,7 +48,9 @@ public class Master {
         socket.connect(addr,PORT_NUM);
 
         boolean first = true;
+        int packets = 0;
         while (din.read(audioSegment) != -1) {
+            
             long playAt = -1;
             if (first) {
                 first = false;
@@ -45,8 +65,11 @@ public class Master {
 
             DatagramPacket packet = new DatagramPacket(payload, payload.length);
             socket.send(packet);
+            packets++;
 
         }
+
+        System.out.println(packets + " packets sent");
 
     }
 }
