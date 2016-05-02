@@ -10,8 +10,6 @@ public class MasterPacket {
 //    the music to play
     private byte[] music;
 
-    private AudioFormat format;
-
     public long getTimeToPlay() {
         return timeToPlay;
     }
@@ -20,10 +18,9 @@ public class MasterPacket {
         return music;
     }
 
-    public MasterPacket(long timeToPlay, byte[] music, AudioFormat format) {
+    public MasterPacket(long timeToPlay, byte[] music) {
         this.timeToPlay = timeToPlay;
         this.music = music;
-        this.format = format;
     }
 
     public void print(){
@@ -33,11 +30,11 @@ public class MasterPacket {
     public static int audioFormatLength(){
         return 2 * Float.BYTES + 5 * Integer.BYTES;
     }
-    public byte[] packAudioFormat(){
+    public byte[] packAudioFormat(AudioFormat format){
 
         ByteBuffer buffer = ByteBuffer.allocate(MasterPacket.audioFormatLength());
 
-        AudioFormat.Encoding encoding = this.format.getEncoding();
+        AudioFormat.Encoding encoding = format.getEncoding();
         if (encoding.equals(AudioFormat.Encoding.ALAW)){
             buffer.putInt(0);
         } else if (encoding.equals(AudioFormat.Encoding.PCM_FLOAT)){
@@ -50,12 +47,12 @@ public class MasterPacket {
             buffer.putInt(4);
         }
 
-        buffer.putFloat(this.format.getSampleRate());
-        buffer.putInt(this.format.getSampleSizeInBits());
-        buffer.putInt(this.format.getChannels());
-        buffer.putInt(this.format.getFrameSize());
-        buffer.putFloat(this.format.getFrameRate());
-        buffer.putInt((this.format.isBigEndian() ? 1 : 0));
+        buffer.putFloat(format.getSampleRate());
+        buffer.putInt(format.getSampleSizeInBits());
+        buffer.putInt(format.getChannels());
+        buffer.putInt(format.getFrameSize());
+        buffer.putFloat(format.getFrameRate());
+        buffer.putInt((format.isBigEndian() ? 1 : 0));
 
         return buffer.array();
     }
@@ -96,12 +93,10 @@ public class MasterPacket {
     }
 
     public byte[] pack(){
-        byte[] packedAudioFormat = this.packAudioFormat();
-        int length = Long.BYTES + packedAudioFormat.length + music.length;
+        int length = Long.BYTES + music.length;
 
         ByteBuffer buffer = ByteBuffer.allocate(length);
         buffer.putLong(this.timeToPlay);
-        buffer.put(packedAudioFormat);
         buffer.put(this.music);
 
         return buffer.array();
@@ -111,14 +106,9 @@ public class MasterPacket {
         ByteBuffer buffer = ByteBuffer.wrap(packet);
 
         long timeToPlay = buffer.getLong();
-
-        byte[] formatBytes = new byte[MasterPacket.audioFormatLength()];
-        buffer.get(formatBytes);
-        AudioFormat format = MasterPacket.unpackAudioFormat(formatBytes);
-
         byte[] music = new byte[buffer.remaining()];
         buffer.get(music);
 
-        return new MasterPacket(timeToPlay,music,format);
+        return new MasterPacket(timeToPlay,music);
     }
 }
