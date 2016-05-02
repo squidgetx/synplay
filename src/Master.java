@@ -11,6 +11,9 @@ public class Master {
         DatagramSocket socket = new DatagramSocket();
         socket.connect(addr,PORT_NUM);
 
+        long now = System.currentTimeMillis();
+        long playAt = now + 1000;
+
         String toSend = "this is the first message";
         byte[] bytes = toSend.getBytes();
         DatagramPacket packet = new DatagramPacket(bytes,bytes.length);
