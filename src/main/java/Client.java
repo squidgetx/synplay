@@ -1,5 +1,4 @@
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
+import java.net.*;
 import javax.sound.sampled.*;
 import java.io.*;
 
@@ -29,8 +28,13 @@ public class Client {
 
 
         int PORT_NUM = 6000;
-        DatagramSocket socket = new DatagramSocket(PORT_NUM);
+        //DatagramSocket socket = new DatagramSocket(PORT_NUM);
+        MulticastSocket socket = new MulticastSocket(PORT_NUM);
+        InetAddress group = InetAddress.getByName(args[0]);
+        socket.joinGroup(group);
+
         socket.setReceiveBufferSize(25000000);
+
 
         DatagramPacket packet = new DatagramPacket(new byte[1024],1024);
 
