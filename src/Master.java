@@ -14,9 +14,13 @@ public class Master {
         long now = System.currentTimeMillis();
         long playAt = now + 1000;
 
-        String toSend = "this is the first message";
+        String toSend = "this is the music";
         byte[] bytes = toSend.getBytes();
-        DatagramPacket packet = new DatagramPacket(bytes,bytes.length);
+
+        MasterPacket masterPacket = new MasterPacket(playAt,bytes);
+        byte[] payload = masterPacket.pack();
+
+        DatagramPacket packet = new DatagramPacket(payload,payload.length);
 
         socket.send(packet);
     }

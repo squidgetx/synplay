@@ -11,8 +11,7 @@ public class Client {
         socket.receive(packet);
         byte[] requestData = packet.getData();
 
-        String str = new String(requestData);
-        System.out.println(str);
-
+        MasterPacket masterPacket = MasterPacket.unpack(requestData);
+        System.out.println(new String(masterPacket.getMusic()));
     }
 }
