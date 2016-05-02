@@ -7,6 +7,8 @@ public class MasterPacket {
 //    time at which to play the song
     private long timeToPlay;
 
+    private int seqNum;
+
 //    the music to play
     private byte[] music;
 
@@ -18,13 +20,14 @@ public class MasterPacket {
         return music;
     }
 
-    public MasterPacket(long timeToPlay, byte[] music) {
+    public MasterPacket(int seqNum, long timeToPlay, byte[] music) {
+        this.seqNum = seqNum;
         this.timeToPlay = timeToPlay;
         this.music = music;
     }
 
     public void print(){
-        System.out.println("<MasterPacket: timeToPlay=" + this.timeToPlay + ">");
+        System.out.println("<MasterPacket: seqNum=" + this.seqNum + " timeToPlay=" + this.timeToPlay + ">");
     }
 
     public static int audioFormatLength(){
@@ -93,9 +96,10 @@ public class MasterPacket {
     }
 
     public byte[] pack(){
-        int length = Long.BYTES + music.length;
+        int length = Integer.BYTES + Long.BYTES + music.length;
 
         ByteBuffer buffer = ByteBuffer.allocate(length);
+        buffer.putInt(this.seqNum);
         buffer.putLong(this.timeToPlay);
         buffer.put(this.music);
 
@@ -105,10 +109,11 @@ public class MasterPacket {
     public static MasterPacket unpack(byte[] packet){
         ByteBuffer buffer = ByteBuffer.wrap(packet);
 
+        int seqNum = buffer.getInt();
         long timeToPlay = buffer.getLong();
         byte[] music = new byte[buffer.remaining()];
         buffer.get(music);
 
-        return new MasterPacket(timeToPlay,music);
+        return new MasterPacket(seqNum,timeToPlay,music);
     }
 }
