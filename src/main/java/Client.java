@@ -24,40 +24,42 @@ public class Client {
         DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
         SourceDataLine audioLine = (SourceDataLine) AudioSystem.getLine(info);
         audioLine.open(format);
-        audioLine.start();
 
 
         int PORT_NUM = 6000;
-        //DatagramSocket socket = new DatagramSocket(PORT_NUM);
-        MulticastSocket socket = new MulticastSocket(PORT_NUM);
-        InetAddress group = InetAddress.getByName(args[0]);
-        socket.joinGroup(group);
+        DatagramSocket socket = new DatagramSocket(PORT_NUM);
+        //MulticastSocket socket = new MulticastSocket(PORT_NUM);
+        //InetAddress group = InetAddress.getByName(args[0]);
+        //socket.joinGroup(group);
 
         socket.setReceiveBufferSize(25000000);
 
 
         DatagramPacket packet = new DatagramPacket(new byte[1024],1024);
 
+        // Get the first packet
+        socket.receive(packet);
+        MasterPacket masterPacket = MasterPacket.unpack(packet.getData());
+        audioLine.write(masterPacket.getMusic(), 0, masterPacket.getMusic().length);
+        
+        long sleepTime = masterPacket.getTimeToPlay() - System.currentTimeMillis();
+        Thread.sleep(sleepTime);
+        audioLine.start();
+        System.out.println("Waking up at: " + System.currentTimeMillis());
         int packets = 0;
         while(true) {
           socket.receive(packet);
           packets++;
           byte[] requestData = packet.getData();
 
-          MasterPacket masterPacket = MasterPacket.unpack(requestData);
+          masterPacket = MasterPacket.unpack(requestData);
           masterPacket.print();
 
           audioLine.write(masterPacket.getMusic(), 0, masterPacket.getMusic().length);
           System.out.println(packets + " pakcets received\r\n");
         }
 /*
-        long sleepTime = masterPacket.getTimeToPlay() - System.currentTimeMillis();
-        Thread.sleep(sleepTime);
-
-        System.out.println("Waking up at: " + System.currentTimeMillis());
-        System.out.println(new String(masterPacket.getMusic()));
-        audioLine.start();
-        */
+               */
 
     }
 }
