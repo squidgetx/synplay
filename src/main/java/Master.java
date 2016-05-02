@@ -44,8 +44,11 @@ public class Master {
 //        connect to client socket
         int PORT_NUM = 6000;
         InetAddress addr = InetAddress.getByName(args[1]);
+        InetAddress addr2 = InetAddress.getByName(args[2]);
         DatagramSocket socket = new DatagramSocket();
+        DatagramSocket socket2 = new DatagramSocket();
         socket.connect(addr,PORT_NUM);
+        socket2.connect(addr2, PORT_NUM);
 
         boolean first = true;
         int packets = 0;
@@ -65,6 +68,7 @@ public class Master {
 
             DatagramPacket packet = new DatagramPacket(payload, payload.length);
             socket.send(packet);
+            socket2.send(packet);
             packets++;
 
         }
