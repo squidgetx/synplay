@@ -58,7 +58,7 @@ public class Master {
                 playAt = now + 1000;
             }
 
-            MasterPacket masterPacket = new MasterPacket(playAt, audioSegment);
+            MasterPacket masterPacket = new MasterPacket(playAt, audioSegment, decodedFormat);
             byte[] payload = masterPacket.pack();
 
             masterPacket.print();
