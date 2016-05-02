@@ -1,0 +1,6 @@
+# Editors
+.idea/
+*.swp
+
+# Java
+*.class
