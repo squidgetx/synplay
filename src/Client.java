@@ -13,7 +13,7 @@ public class Client {
 
         MasterPacket masterPacket = MasterPacket.unpack(requestData);
         masterPacket.print();
-        
+
         long sleepTime = masterPacket.getTimeToPlay() - System.currentTimeMillis();
         Thread.sleep(sleepTime);
 
