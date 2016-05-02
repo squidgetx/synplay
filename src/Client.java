@@ -12,6 +12,12 @@ public class Client {
         byte[] requestData = packet.getData();
 
         MasterPacket masterPacket = MasterPacket.unpack(requestData);
+        masterPacket.print();
+        
+        long sleepTime = masterPacket.getTimeToPlay() - System.currentTimeMillis();
+        Thread.sleep(sleepTime);
+
+        System.out.println("Waking up at: " + System.currentTimeMillis());
         System.out.println(new String(masterPacket.getMusic()));
     }
 }

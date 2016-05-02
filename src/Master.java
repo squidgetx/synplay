@@ -20,6 +20,8 @@ public class Master {
         MasterPacket masterPacket = new MasterPacket(playAt,bytes);
         byte[] payload = masterPacket.pack();
 
+        masterPacket.print();
+
         DatagramPacket packet = new DatagramPacket(payload,payload.length);
 
         socket.send(packet);

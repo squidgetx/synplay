@@ -20,6 +20,10 @@ public class MasterPacket {
         this.music = music;
     }
 
+    public void print(){
+        System.out.println("<MasterPacket: timeToPlay=" + this.timeToPlay + ">");
+    }
+
     public byte[] pack(){
         int length = Long.BYTES + music.length;
         ByteBuffer buffer = ByteBuffer.allocate(length);
