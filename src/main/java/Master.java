@@ -68,6 +68,7 @@ public class Master {
 
             DatagramPacket packet = new DatagramPacket(payload, payload.length);
             socket.send(packet);
+            packet = new DatagramPacket(payload, payload.length);
             socket2.send(packet);
             packets++;
 
