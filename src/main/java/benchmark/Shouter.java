@@ -18,12 +18,13 @@ public class Shouter {
     }
 
     public static void main(String args[]) throws Exception {
-      SourceDataLine audioOut = openLine(getFormat());
-      byte[] data = {127, 127, 127, 127};
-      // record write time!
-      long time = System.currentTimeMillis();
-      audioOut.write(data, 0, 4);
-      System.out.println("Impulse sent at " + time);
+        SourceDataLine audioOut = openLine(getFormat());
+
+//        construct and run the thread with max priority
+        ShoutRunner sr = new ShoutRunner(audioOut);
+        Thread thread = new Thread(sr);
+        thread.setPriority(Thread.MAX_PRIORITY);
+        thread.start();
     }
 
     public static SourceDataLine openLine(AudioFormat format) throws LineUnavailableException {

@@ -6,7 +6,12 @@ public class Listener {
     public static void main(String args[]) throws Exception {
         AudioFormat format = Shouter.getFormat();
         TargetDataLine line = Listener.openLine(format);
-        Listener.listen(line);
+
+//        construct and run the thread with max priority
+        ListenRunner lr = new ListenRunner(line);
+        Thread thread = new Thread(lr);
+        thread.setPriority(Thread.MAX_PRIORITY);
+        thread.start();
     }
 
     public static TargetDataLine openLine(AudioFormat format) throws LineUnavailableException {
@@ -24,25 +29,4 @@ public class Listener {
         return line;
     }
 
-    public static void listen(TargetDataLine line){
-
-        // Begin audio capture.
-        line.start();
-
-        int numBytesRead;
-        byte[] data = new byte[line.getBufferSize() / 5];
-
-        while (true) {
-            // Read bytes from the TargetDataLine
-            numBytesRead =  line.read(data, 0, data.length);
-
-            // And print the bytes to stdout
-            for (int i = 0; i < numBytesRead; i++){
-                if (Math.abs(data[i]) > 120) {
-                    long now = System.currentTimeMillis();
-                    System.out.println("at nanotime: " + now + " heard: " + data[i]);
-                }
-            }
-        }
-    }
 }
