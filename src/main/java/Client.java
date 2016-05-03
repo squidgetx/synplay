@@ -40,6 +40,7 @@ public class Client {
         // Get the first packet
         socket.receive(packet);
         MasterPacket masterPacket = MasterPacket.unpack(packet.getData());
+        masterPacket.print();
         audioLine.write(masterPacket.getMusic(), 0, masterPacket.getMusic().length);
         
         long sleepTime = masterPacket.getTimeToPlay() - System.currentTimeMillis();
