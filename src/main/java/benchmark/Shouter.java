@@ -1,6 +1,7 @@
 package benchmark;
 
 import javax.sound.sampled.*;
+import java.lang.*;
 
 public class Shouter {
 
@@ -17,20 +18,27 @@ public class Shouter {
     }
 
     public static void main(String args[]) throws Exception {
-
+      SourceDataLine audioOut = openLine(getFormat());
+      byte[] data = {-1, -1, -1, -1};
+      // record write time!
+      long time = System.currentTimeMillis();
+      audioOut.write(data, 0, 4);
+      System.out.println("Impulse sent at " + time);
     }
 
-    public static void openLine(AudioFormat format) throws LineUnavailableException {
-        TargetDataLine line;
-        DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
+    public static SourceDataLine openLine(AudioFormat format) throws LineUnavailableException {
+        SourceDataLine line;
+        DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
         if (!AudioSystem.isLineSupported(info)) {
             // Handle the error ...
             throw new LineUnavailableException();
         }
 
         // Obtain and open the line.
-        line = (TargetDataLine) AudioSystem.getLine(info);
+        line = (SourceDataLine) AudioSystem.getLine(info);
         line.open(format);
+        line.start();
+        return line;
     }
 
 }
