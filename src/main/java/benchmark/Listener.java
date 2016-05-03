@@ -39,7 +39,7 @@ public class Listener {
             // And print the bytes to stdout
             for (int i = 0; i < numBytesRead; i++){
                 if (Math.abs(data[i]) > 120) {
-                    long now = System.nanoTime();
+                    long now = System.currentTimeMillis();
                     System.out.println("at nanotime: " + now + " heard: " + data[i]);
                 }
             }
