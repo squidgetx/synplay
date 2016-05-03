@@ -21,7 +21,7 @@ public class Shouter {
       SourceDataLine audioOut = openLine(getFormat());
       byte[] data = {127, 127, 127, 127};
       // record write time!
-      long time = System.currentTimeMillis();
+      long time = System.nanoTime();
       audioOut.write(data, 0, 4);
       System.out.println("Impulse sent at " + time);
     }
