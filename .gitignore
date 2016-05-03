@@ -1,6 +1,9 @@
 # Editors
 *.swp
 
+# C
+*.o
+
 # Java
 *.class
 target/
