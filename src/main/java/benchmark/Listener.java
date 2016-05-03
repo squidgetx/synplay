@@ -38,7 +38,9 @@ public class Listener {
 
             // And print the bytes to stdout
             for (int i = 0; i < numBytesRead; i++){
-                System.out.println(data[i]);
+                if (Math.abs(data[i]) > 120) {
+                    System.out.println(data[i]);
+                }
             }
         }
     }
