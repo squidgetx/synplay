@@ -19,7 +19,7 @@ public class Shouter {
 
     public static void main(String args[]) throws Exception {
       SourceDataLine audioOut = openLine(getFormat());
-      byte[] data = {-1, -1, -1, -1};
+      byte[] data = {127, 127, 127, 127};
       // record write time!
       long time = System.currentTimeMillis();
       audioOut.write(data, 0, 4);
