@@ -27,6 +27,10 @@
             <name>Maven Central</name>
             <url>http://repo1.maven.org/maven2/</url>
         </repository>
+        <repository>
+          <id>renejeschke-snapshots</id>
+          <url>http://maven.renejeschke.de/snapshots</url>
+        </repository>
     </repositories>
     <dependencies>
         <dependency>
@@ -45,6 +49,11 @@
             <groupId>com.googlecode.soundlibs</groupId>
             <artifactId>mp3spi</artifactId>
             <version>1.9.5-1</version>
+        </dependency>
+        <dependency>
+          <groupId>com.github.rjeschke</groupId>
+          <artifactId>jpa</artifactId>
+          <version>0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
