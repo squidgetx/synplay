@@ -7,19 +7,23 @@
 class Master
 {
   public:
-    Master(asio::io_service &io_service, std::string &ip_addr, int port) :
-      endpt(asio::ip::address::from_string(ip_addr),port),
+    Master(std::string &ip_addr, int port) :
+      io_service(),
+      remote_endpt(asio::ip::address::from_string(ip_addr),port),
       socket(io_service, asio::ip::udp::endpoint(asio::ip::udp::v4(), 0)){
 
       }
-    void send();
+    
+    void run();
 
     ~Master ();
 
   private:
+    void send();
     void send_packet(std::size_t length, char *data);
 
-    asio::ip::udp::endpoint endpt;
+    asio::io_service io_service;
+    asio::ip::udp::endpoint remote_endpt;
     asio::ip::udp::socket socket;
 };
 

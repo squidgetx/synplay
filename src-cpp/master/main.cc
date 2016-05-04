@@ -18,12 +18,8 @@ int main(int argc, char *argv[])
   string ip_addr = argv[1];
   int port = atoi(argv[2]);
 
-  asio::io_service io_service;
-  Master *master = new Master(io_service,ip_addr,port);
-  
-  master->send();
-
-  io_service.run();
+  Master *master = new Master(ip_addr,port);
+  master->run();
 
   return 0;
 }
