@@ -7,17 +7,18 @@
 class Master
 {
   public:
-    Master(std::string ip_addr, int port);
+    Master(asio::io_service &io_service, std::string &ip_addr, int port) :
+      endpt(asio::ip::address::from_string(ip_addr),port),
+      socket(io_service,endpt){
 
-    Master::connect(asio::io_service io_s);
-    Master::send();
+      }
+    void send();
 
     ~Master ();
 
   private:
-    void Master::send_packet(std::size_t length, char *data);
+    void send_packet(std::size_t length, char *data);
 
-    asio::io_service io_service;
     asio::ip::udp::endpoint endpt;
     asio::ip::udp::socket socket;
 };
