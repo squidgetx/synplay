@@ -11,6 +11,6 @@ class Master
 
   private:
     int port;
-}
+};
 
 #endif
