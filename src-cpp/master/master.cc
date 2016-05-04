@@ -4,11 +4,25 @@
 #include <string>
 
 using namespace std;
-using namespace asio;
+using namespace asio::ip;
 
-Master::Master(string ip_addr, int port){
-  udp::endpoint endpt = udp::endpoint(ip::address::from_string(ip_addr),port);
+void Master::send_packet(size_t length, char *data){
+
+  socket.async_send_to(
+      asio::buffer(data, length), remote_endpt,
+      [this](error_code /*ec*/, size_t /*bytes_sent*/)
+      {
+        // send more data
+      });
 }
 
-void connect(){
+void Master::send(){
+  char *data = "this is a test";
+  this->send_packet(strlen(data),data);
+}
+
+void Master::run(){
+  io_service.run();
+
+  this->send();
 }

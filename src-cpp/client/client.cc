@@ -11,15 +11,14 @@ void Client::receive() {
     {
       if (!ec && bytes_recvd > 0)
       {
-        for(int i = 0; i < bytes_recvd; i++) {
-          std::cout << data[i] << std::endl;
-        }
+        MPacket * mpacket = MPacket::unpack(data, bytes_recvd);
+        packet_buffer.put(mpacket);
       }
       receive();
     });
 }
 
-Client::Client(asio::io_service& io_service, int p) : port(p), 
+Client::Client(asio::io_service& io_service, int p) : port(p), packet_buffer(100),  
   socket(io_service, udp::endpoint(udp::v4(), p)) {
   std::cout << "Listening on " << port << std::endl;
 }
