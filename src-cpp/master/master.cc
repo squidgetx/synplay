@@ -12,13 +12,15 @@ void Master::send_packet(size_t length, char *data){
       asio::buffer(data, length), remote_endpt,
       [this](error_code /*ec*/, size_t /*bytes_sent*/)
       {
-        // send more data
+        this->send();
       });
 }
 
 void Master::send(){
-  char *data = "this is a test";
-  this->send_packet(strlen(data),data);
+  char *buf = new char[BUFFER_SIZE];
+  file.read(buf,BUFFER_SIZE);
+
+  this->send_packet(BUFFER_SIZE,buf);
 }
 
 void Master::run(){
