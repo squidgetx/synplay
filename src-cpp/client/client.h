@@ -5,8 +5,10 @@
 #include <cstdlib>
 #include <system_error>
 #include <asio.hpp>
+#include <portaudio.h>
 
 #define LEN 1024
+#define SAMPLE_RATE 44100
 using asio::ip::udp;
 
 class Client {
