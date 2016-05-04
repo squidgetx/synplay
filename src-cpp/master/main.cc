@@ -1,3 +1,4 @@
+#include <iostream>
 #include "master.h"
 
 using namespace std;
