@@ -5,8 +5,7 @@
 class Master
 {
   public:
-    Master (int port);
-
+    Master::Master(string ip_addr, int port);
     ~Master ();
 
   private:
