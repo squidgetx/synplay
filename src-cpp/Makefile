@@ -3,6 +3,7 @@ OFLAG=-O3
 CXXFLAGS=-g --std=c++11 -I"$(CURDIR)" $(OFLAG)
 
 DIRS=client master
+BIN_DIR=bin
 SOURCES :=
 BINS :=
 OBJECTS = $(patsubst %.cc, %.o, $(SOURCES))
@@ -14,12 +15,12 @@ all:
 
 include $(patsubst %, %/Makefile.inc, $(DIRS))
 
-BINS += master
-master: $(MASTER_OBJECTS)
+BINS += $(BIN_DIR)/master
+$(BIN_DIR)/master: $(MASTER_OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
-BINS += client
-client: $(CLIENT_OBJECTS)
+BINS += $(BIN_DIR)/client
+$(BIN_DIR)/client: $(CLIENT_OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 .PHONY: all
