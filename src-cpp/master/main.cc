@@ -19,6 +19,13 @@ int main(int argc, char *argv[])
   int port = atoi(argv[2]);
 
   Master *master = new Master(ip_addr,port);
+  
+  asio::io_service io_service;
+  
+  master->connect(io_service);
+  master->send();
+
+  io_service.run();
 
   return 0;
 }
