@@ -19,13 +19,13 @@ const char * MPacket::pack() {
   return buf.str().data();
 }
 
-MPacket * MPacket::unpack(char * p) {
+MPacket * MPacket::unpack(char * p, std::size_t size) {
   std::stringbuf buf;
   buf.str(p);
   long timestamp;
   char * payload = new char[PACKET_SIZE];
   buf.sgetn(reinterpret_cast<char*>(&timestamp), 4);
-  buf.sgetn(payload, PACKET_SIZE);
+  buf.sgetn(payload, size - sizeof(timestamp));
   return new MPacket(timestamp, payload);
 }
 

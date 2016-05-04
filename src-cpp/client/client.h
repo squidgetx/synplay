@@ -5,8 +5,12 @@
 #include <cstdlib>
 #include <system_error>
 #include <asio.hpp>
+#include <portaudio.h>
+#include "util/ringbuf.h"
+#include "util/mpacket.h"
 
 #define LEN 1024
+#define SAMPLE_RATE 44100
 using asio::ip::udp;
 
 class Client {
@@ -20,6 +24,7 @@ class Client {
     udp::endpoint sender_endpoint;
     char data[LEN];
     void receive();
+    RingBuffer<MPacket*> packet_buffer;
 
 
 
