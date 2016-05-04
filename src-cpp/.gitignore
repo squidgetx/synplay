@@ -1,3 +1,2 @@
-master
-client
+bin/*
 *.o
