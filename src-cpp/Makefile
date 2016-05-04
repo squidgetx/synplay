@@ -1,6 +1,6 @@
 CXX=g++
 OFLAG=-O3
-CXXFLAGS=-g --std=c++11 -I"$(CURDIR)" $(OFLAG)
+CXXFLAGS=-g --std=c++11 -I"$(CURDIR)" -I"$(CURDIR)/lib/asio-1.10.6/include" $(OFLAG)
 
 DIRS=client master
 BIN_DIR=bin
