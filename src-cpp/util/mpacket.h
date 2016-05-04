@@ -12,7 +12,7 @@ class MPacket {
     char* get_payload();
     long get_timestamp();
     const char* pack();
-    static MPacket* unpack(char * p);
+    static MPacket* unpack(char * p, std::size_t n);
 
   private:
     char* payload;
