@@ -10,7 +10,6 @@ using namespace std;
 using namespace asio::ip;
 
 void Master::send_packet(const MPacket& mp){
-
   socket.async_send_to(
       asio::buffer(mp.pack()), remote_endpt,
       [this](error_code /*ec*/, size_t /*bytes_sent*/)
@@ -32,7 +31,6 @@ void Master::send(){
 }
 
 void Master::run(){
-  io_service.run();
-
   this->send();
+  io_service.run();
 }

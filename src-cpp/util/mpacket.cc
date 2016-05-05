@@ -36,5 +36,3 @@ MPacket * MPacket::unpack(char * p, std::size_t size) {
 void MPacket::print() {
   std::cout << "<MPacket timestamp: " << timestamp << " payload size: " << payload_size << std::endl;
 }
-
-
