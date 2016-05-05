@@ -11,16 +11,6 @@
 using namespace std;
 using namespace asio::ip;
 
-void Master::send_packet(const MPacket& mp){
-
-  socket.async_send_to(
-      asio::buffer(mp.pack()), remote_endpt,
-      [this](error_code /*ec*/, size_t /*bytes_sent*/)
-      {
-        this->send();
-      });
-}
-
 void Master::send(){
 	short *buf = new short[BUFFER_SIZE] ;
 
@@ -31,11 +21,16 @@ void Master::send(){
 	}
 
 
-  long now = get_millisecond_time();
+	long now = get_millisecond_time();
 
-  MPacket mp(now,buf,num_read);
+	MPacket mp(now,buf,num_read);
 
-  this->send_packet(mp);
+	socket.async_send_to(
+		asio::buffer(mp.pack()), remote_endpt,
+		[this](error_code /*ec*/, size_t /*bytes_sent*/)
+		{
+			this->send();
+		});
 }
 
 void Master::run(){
