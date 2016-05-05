@@ -1,10 +1,11 @@
+#ifndef MASTER_H
+#define MASTER_H
+
 #include <string>
 #include <iostream>
 #include <fstream>
 #include "asio.hpp"
-
-#ifndef MASTER_H
-#define MASTER_H
+#include "util/mpacket.h"
 
 #define BUFFER_SIZE (1024)
 
@@ -26,7 +27,7 @@ class Master
 
   private:
     void send();
-    void send_packet(std::size_t length, char *data);
+    void send_packet(const MPacket& mp);
 
     asio::io_service io_service;
     asio::ip::udp::endpoint remote_endpt;

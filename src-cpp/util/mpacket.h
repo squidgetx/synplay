@@ -5,14 +5,15 @@
 
 #include <iostream>
 #include <sstream>
+#include "asio.hpp"
 
 class MPacket {
   public:
-    MPacket(int time, char* p, int psize);
+    MPacket(long time, char* p, int psize);
     char* get_payload();
     int get_payload_size();
     long get_timestamp();
-    const char* pack();
+    asio::const_buffer pack() const;
     static MPacket* unpack(char * p, std::size_t n);
 
   private:

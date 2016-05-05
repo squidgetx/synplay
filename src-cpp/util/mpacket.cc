@@ -1,6 +1,6 @@
 #include "mpacket.h"
 
-MPacket::MPacket(int time, char* p, int ps) : timestamp(time), payload(p), payload_size(ps) {
+MPacket::MPacket(long time, char* p, int ps) : timestamp(time), payload(p), payload_size(ps) {
 
 }
 
@@ -16,11 +16,11 @@ long MPacket::get_timestamp() {
   return timestamp;
 }
 
-const char * MPacket::pack() {
+asio::const_buffer MPacket::pack() const {
   std::stringbuf buf;
   buf.sputn(reinterpret_cast<char*>(timestamp), 4);
   buf.sputn(payload, payload_size);
-  return buf.str().data();
+  return buf.str();
 }
 
 MPacket * MPacket::unpack(char * p, std::size_t size) {
