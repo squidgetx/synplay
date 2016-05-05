@@ -1,6 +1,6 @@
 CXX=g++
 OFLAG=-O3
-CXXFLAGS=-g --std=c++11 -DASIO_STANDALONE -lportaudio -I"$(CURDIR)" -I"$(CURDIR)/lib/asio-1.10.6/include" $(OFLAG)
+CXXFLAGS=-g --std=c++11 -DASIO_STANDALONE -lportaudio -lsndfile -I"$(CURDIR)" -I"$(CURDIR)/lib/asio-1.10.6/include" $(OFLAG)
 
 DIRS=client master util
 BIN_DIR=bin

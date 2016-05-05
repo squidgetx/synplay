@@ -9,8 +9,8 @@
 
 class MPacket {
   public:
-    MPacket(long time, char* p, int psize);
-    char* get_payload();
+    MPacket(long time, short* p, int psize);
+    short* get_payload();
     int get_payload_size();
     long get_timestamp();
     void print();
@@ -18,7 +18,7 @@ class MPacket {
     static MPacket* unpack(char * p, std::size_t n);
 
   private:
-    char* payload;
+    short* payload;
     int payload_size;
     long timestamp;
 
