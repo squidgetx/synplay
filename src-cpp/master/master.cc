@@ -24,6 +24,11 @@ void Master::send(){
   file.read(buf,BUFFER_SIZE);
 
   long num_read = file.gcount();
+  
+  if (!num_read){
+  	return;
+  }
+
   long now = get_millisecond_time();
 
   MPacket mp(now,buf,num_read);
@@ -32,7 +37,6 @@ void Master::send(){
 }
 
 void Master::run(){
-  io_service.run();
-
   this->send();
+  io_service.run();
 }
