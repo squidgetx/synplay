@@ -6,6 +6,7 @@
 #include <fstream>
 #include "asio.hpp"
 #include "util/mpacket.h"
+#include <sndfile.hh>
 
 #define BUFFER_SIZE (1024)
 
@@ -16,14 +17,17 @@ class Master
       io_service(),
       remote_endpt(asio::ip::address::from_string(ip_addr),port),
       socket(io_service, asio::ip::udp::endpoint(asio::ip::udp::v4(), 0)){
-       file.open(filename, std::ios::in | std::ios::binary); 
+
+          file = SndfileHandle (filename);
+
+          std::cerr << "Opened file '" << filename << "'" << std::endl;
+          std::cerr << "\tSample rate '" << file.samplerate() << "'" << std::endl;
+          std::cerr << "\tChannels '" << file.channels() << "'" << std::endl;
       }
     
     void run();
 
-    ~Master () {
-      file.close();
-    }
+    ~Master ();
 
   private:
     void send();
@@ -32,7 +36,7 @@ class Master
     asio::io_service io_service;
     asio::ip::udp::endpoint remote_endpt;
     asio::ip::udp::socket socket;
-    std::ifstream file;
+    SndfileHandle file;
 };
 
 #endif
