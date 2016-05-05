@@ -25,10 +25,7 @@ class Client {
     char data[LEN];
     void receive();
     RingBuffer<MPacket*> packet_buffer;
-    RingBuffer<char> play_buffer;
-
-
-
+    RingBuffer<short> play_buffer;
 };
 
 #endif

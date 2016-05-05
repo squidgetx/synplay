@@ -12,8 +12,9 @@ class RingBuffer {
     int putn(T* data, int n);
     int put(T datum);
     int getn(T* data, int n);
+    bool empty();
     T get();
-  private: 
+  private:
     T* data;
     int read_head;
     int write_head;
@@ -27,7 +28,7 @@ int RingBuffer<T>::put(T datum) {
   }
   data[write_head] = datum;
   write_head++;
-  if (write_head == capacity) 
+  if (write_head == capacity)
     write_head = 0;
   return 1;
 }
@@ -41,6 +42,11 @@ int RingBuffer<T>::putn(T* data, int n) {
     }
   }
   return n;
+}
+
+template <class T>
+bool RingBuffer<T>::empty() {
+  return read_head == write_head;
 }
 
 template <class T>

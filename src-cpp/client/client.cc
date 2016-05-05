@@ -1,22 +1,21 @@
 #include "client.h"
 
 static int pacallback(const void *inputBuffer, void* outputBuffer,
-    unsigned long framesPerBuffer, 
-    const PaStreamCallbackTimeInfo* timeInfo, 
-    PaStreamCallbackFlags statusFlags, 
+    unsigned long framesPerBuffer,
+    const PaStreamCallbackTimeInfo* timeInfo,
+    PaStreamCallbackFlags statusFlags,
     void *userData) {
 
-  char *audio_out = (char*) outputBuffer;
-  RingBuffer<char> * play_buffer = (RingBuffer<char> *) userData;
-  // copy as much from the byte buffer to the 
+  short *audio_out = (short*) outputBuffer;
+  RingBuffer<short> * play_buffer = (RingBuffer<short> *) userData;
+  // copy as much from the byte buffer to the
   // audio out
   bool endl = false;
   for(int i = 0; i < framesPerBuffer; i++) {
+    if (play_buffer->empty())
+      break;
+
     *audio_out = play_buffer->get();
-    if (*audio_out != 0) {
-      std::cout << *audio_out;
-      endl = true;
-    }
     audio_out++;
   }
 
@@ -59,11 +58,11 @@ void Client::start() {
   PaStream *stream;
 
   /* No input, 2 stereo out */
-  err = Pa_OpenDefaultStream(&stream, 0, 2, paFloat32, SAMPLE_RATE, 4, pacallback, &play_buffer);
+  err = Pa_OpenDefaultStream(&stream, 0, 2, paInt16, SAMPLE_RATE, 4, pacallback, &play_buffer);
   if (err != paNoError) goto error;
 
   receive();
- 
+
   err = Pa_StartStream(stream);
   if (err != paNoError) goto error;
 
