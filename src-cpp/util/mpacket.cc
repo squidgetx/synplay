@@ -18,7 +18,7 @@ long MPacket::get_timestamp() {
 
 asio::const_buffer MPacket::pack() const {
   std::stringbuf buf;
-  buf.sputn(reinterpret_cast<char*>(timestamp), 4);
+  buf.sputn(reinterpret_cast<char*>(timestamp), sizeof(long));
   buf.sputn(payload, payload_size);
   return buf.str();
 }
@@ -28,9 +28,13 @@ MPacket * MPacket::unpack(char * p, std::size_t size) {
   buf.str(p);
   long timestamp;
   char * payload = new char[PACKET_SIZE];
-  buf.sgetn(reinterpret_cast<char*>(&timestamp), 4);
+  buf.sgetn(reinterpret_cast<char*>(&timestamp), sizeof(long));
   buf.sgetn(payload, size - sizeof(timestamp));
   return new MPacket(timestamp, payload, size - sizeof(timestamp));
+}
+
+void MPacket::print() {
+  std::cout << "<MPacket timestamp: " << timestamp << " payload size: " << payload_size << std::endl;
 }
 
 
