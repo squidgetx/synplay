@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <system_error>
+#include <deque>
 #include <asio.hpp>
 #include <portaudio.h>
 #include "util/ringbuf.h"
@@ -25,7 +26,7 @@ class Client {
     char data[LEN];
     void receive();
     RingBuffer<MPacket*> packet_buffer;
-    RingBuffer<short> play_buffer;
+    std::deque<short> play_buffer;
 };
 
 #endif

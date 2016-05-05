@@ -7,7 +7,7 @@ static int pacallback(const void *inputBuffer, void* outputBuffer,
     void *userData) {
 
   short *audio_out = (short*) outputBuffer;
-  RingBuffer<short> * play_buffer = (RingBuffer<short> *) userData;
+  std::deque<short> * play_buffer = (std::deque<short> *) userData;
   // copy as much from the byte buffer to the
   // audio out
   bool endl = false;
@@ -15,7 +15,9 @@ static int pacallback(const void *inputBuffer, void* outputBuffer,
     if (play_buffer->empty())
       break;
 
-    *audio_out = play_buffer->get();
+    *audio_out = play_buffer->front();
+    play_buffer->pop_front();
+    std::cout << *audio_out;
     audio_out++;
   }
 
@@ -39,7 +41,7 @@ void Client::receive() {
         mpacket->print();
         // For now just put everything in the play buffer
        // packet_buffer.put(mpacket);
-        play_buffer.putn(mpacket->get_payload(), mpacket->get_payload_size());
+        play_buffer.insert(play_buffer.end(), mpacket->get_payload(), mpacket->get_payload() + mpacket->get_payload_size());
       }
       receive();
     });
