@@ -20,7 +20,7 @@ asio::const_buffer MPacket::pack() const {
   std::stringbuf buf;
   buf.sputn(reinterpret_cast<char*>(timestamp), sizeof(long));
   buf.sputn(payload, payload_size);
-  return buf.str();
+  return asio::const_buffer(buf.str().data(), sizeof(long) + payload_size);
 }
 
 MPacket * MPacket::unpack(char * p, std::size_t size) {
