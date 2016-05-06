@@ -4,13 +4,14 @@
 #include <iostream>
 #include "asio.hpp"
 
-#define NUM_TIMES (4)
+#define NUM_TIMES (5)
 
 typedef mtime_t uint64_t;
 
 class TPacket {
   public:
-    TPacket(mtime_t from_sent = 0, mtime_t to_recvd = 0, mtime_t to_sent = 0, mtime_t from_recvd = 0);
+    TPacket(mtime_t from_sent = 0, mtime_t to_recvd = 0, mtime_t to_sent = 0, 
+        mtime_t from_recvd = 0, mtime_t offset = 0);
     asio::const_buffer pack() const;
     static TPacket* unpack(uint64_t* buf, std::size_t n);
 
@@ -18,6 +19,7 @@ class TPacket {
     mtime_t to_recvd;
     mtime_t to_sent;
     mtime_t from_recvd;
+    mtime_t offset;
 
   private:
 };
