@@ -28,11 +28,11 @@ void Master::receive_timesync_reply() {
       [this](error_code e, size_t bytes_recvd) {
         // calculate sum shit
         uint64_t from_recv = get_millisecond_time();
-        TPacket tp = TPacket::unpack(buffer);
-        uint64_t offset = (tp.to_recv - tp.from_send) - (tp.to_send - from_recv);
-        tp.offset = offset;
+        TPacket * tp = TPacket::unpack(buffer);
+        uint64_t offset = (tp->to_recv - tp->from_send) - (tp->to_send - from_recv);
+        tp->offset = offset;
         socket.async_send_to(
-            asio::buffer(tp.pack()), remote_endpt,
+            asio::buffer(tp->pack()), remote_endpt,
             [this](error_code, size_t) {
               // reply sent...
               // do we need timeouts on this shit

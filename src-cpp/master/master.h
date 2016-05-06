@@ -6,7 +6,7 @@
 #include <fstream>
 #include "asio.hpp"
 #include "util/mpacket.h"
-#include "net/tpacket.h"
+#include "net/time_packet.h"
 #include <sndfile.hh>
 
 #define BUFFER_SIZE (1024)
