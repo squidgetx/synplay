@@ -12,13 +12,15 @@ static int pacallback(const void *inputBuffer, void* outputBuffer,
   // copy as much from the byte buffer to the
   // audio out
   bool endl = false;
+  std::cout << framesPerBuffer << std::endl;
   for(int i = 0; i < framesPerBuffer; i++) {
     if (play_buffer->empty())
       break;
 
-    *audio_out = play_buffer->front();
+    *(audio_out++) = play_buffer->front();
     play_buffer->pop_front();
-    audio_out++;
+    *(audio_out++) = play_buffer->front();
+    play_buffer->pop_front();
   }
 
   return paContinue;
@@ -66,7 +68,7 @@ void Client::start() {
   PaStream *stream;
 
   /* No input, 2 stereo out */
-  err = Pa_OpenDefaultStream(&stream, 0, 2, paInt16, SAMPLE_RATE * 2, 2, pacallback, &play_buffer);
+  err = Pa_OpenDefaultStream(&stream, 0, 2, paInt16, SAMPLE_RATE, 64, pacallback, &play_buffer);
   if (err != paNoError) goto error;
 
   receiveFromFile();
