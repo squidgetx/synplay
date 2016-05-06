@@ -1,34 +1,34 @@
 #include "mpacket.h"
 
-MPacket::MPacket(long time, short* p, int ps) : timestamp(time), payload(p), payload_size(ps) {
+MPacket::MPacket(time_t time, int16_t* p, size_t ps) : timestamp(time), payload(p), payload_size(ps) {
 
 }
 
-int MPacket::get_payload_size() {
+size_t MPacket::get_payload_size() {
   return payload_size;
 }
 
-short* MPacket::get_payload() {
+int16_t* MPacket::get_payload() {
   return payload;
 }
 
-long MPacket::get_timestamp() {
+time_t MPacket::get_timestamp() {
   return timestamp;
 }
 
 asio::const_buffer MPacket::pack() const {
   std::stringbuf buf;
-  buf.sputn(reinterpret_cast<const char*>(&timestamp), sizeof(timestamp));
-  buf.sputn(reinterpret_cast<const char*>(payload), payload_size);
+  buf.sputn(reinterpret_cast<const uint8_t*>(&timestamp), sizeof(timestamp));
+  buf.sputn(reinterpret_cast<const uint8_t*>(payload), payload_size);
   return asio::const_buffer(buf.str().data(), sizeof(timestamp) + payload_size);
 }
 
-MPacket * MPacket::unpack(char* p, std::size_t size) {
+MPacket * MPacket::unpack(uint8_t* p, std::size_t size) {
   ByteBuffer buf(p, size);
-  long timestamp = 0;
-  short * payload = new short[PACKET_SIZE];
+  time_t timestamp = 0;
+  int16_t * payload = new int16_t[PACKET_SIZE];
   buf.get_long(&timestamp);
-  int payload_size = buf.remaining() / sizeof(short);
+  size_t payload_size = buf.remaining() / sizeof(int16_t);
   buf.get_nshorts(payload, payload_size);
   return new MPacket(timestamp, payload, payload_size);
 }

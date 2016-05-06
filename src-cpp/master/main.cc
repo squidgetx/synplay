@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
   }
  
   string ip_addr = argv[1];
-  int port = atoi(argv[2]);
+  uint16_t port = atoi(argv[2]);
   string filename = argv[3];
 
   Master *master = new Master(ip_addr,port,filename);
