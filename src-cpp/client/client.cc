@@ -1,4 +1,5 @@
 #include "client.h"
+#include <sndfile.hh>
 
 static int pacallback(const void *inputBuffer, void* outputBuffer,
     unsigned long framesPerBuffer,
@@ -17,16 +18,19 @@ static int pacallback(const void *inputBuffer, void* outputBuffer,
 
     *audio_out = play_buffer->front();
     play_buffer->pop_front();
-    std::cout << *audio_out;
     audio_out++;
   }
 
-  if (endl) {
-    std::cout << std::endl;
-  }
-
   return paContinue;
+}
 
+void Client::receiveFromFile() {
+  int num_read = file.read(file_buf, BUFFER_LENGTH);
+  play_buffer.insert(play_buffer.end(), file_buf, file_buf + num_read);
+  if (num_read == 0)
+    return;
+
+  receiveFromFile();
 }
 
 void Client::receive() {
@@ -49,6 +53,8 @@ void Client::receive() {
 
 Client::Client(asio::io_service& io_service, int p) : port(p), packet_buffer(100), play_buffer(4096),
   socket(io_service, udp::endpoint(udp::v4(), p)) {
+  file = SndfileHandle("../yellow.wav");
+  std::cout << file.samplerate() << " " << file.channels() << std::endl;
   std::cout << "Listening on " << port << std::endl;
 }
 
@@ -60,17 +66,16 @@ void Client::start() {
   PaStream *stream;
 
   /* No input, 2 stereo out */
-  err = Pa_OpenDefaultStream(&stream, 0, 2, paInt16, SAMPLE_RATE, 4, pacallback, &play_buffer);
+  err = Pa_OpenDefaultStream(&stream, 0, 2, paInt16, SAMPLE_RATE * 2, 2, pacallback, &play_buffer);
   if (err != paNoError) goto error;
 
-  receive();
+  receiveFromFile();
 
   err = Pa_StartStream(stream);
   if (err != paNoError) goto error;
 
 
-  //Pa_Sleep(100000);
-
+  for (;;) {}
   //Pa_StopStream(stream);
   //Pa_CloseStream(stream);
   //Pa_Terminate();
