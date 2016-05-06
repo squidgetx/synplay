@@ -10,7 +10,7 @@
 
 using namespace std;
 using namespace asio::ip;
-
+/*
 void Master::send_timesync() {
   TPacket tp();
   socket.async_send_to(
@@ -27,9 +27,9 @@ void Master::receive_timesync_reply() {
       asio::buffer(buffer, 5), remote_endpt,
       [this](error_code e, size_t bytes_recvd) {
         // calculate sum shit
-        uint64_t from_recv = get_millisecond_time();
+        mtime_t from_recv = get_millisecond_time();
         TPacket * tp = TPacket::unpack(buffer);
-        uint64_t offset = (tp->to_recv - tp->from_send) - (tp->to_send - from_recv);
+        mtime_t offset = (tp->to_recv - tp->from_send) - (tp->to_send - from_recv);
         tp->offset = offset;
         socket.async_send_to(
             asio::buffer(tp->pack()), remote_endpt,
@@ -40,7 +40,7 @@ void Master::receive_timesync_reply() {
         );
       }
   );
-}
+}*/
 
 void Master::send(){
   int16_t *buf = new int16_t[BUFFER_SIZE] ;

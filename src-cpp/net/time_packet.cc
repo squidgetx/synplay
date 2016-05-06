@@ -2,7 +2,7 @@
 
 asio::const_buffer TPacket::pack() const{
 
-	uint64_t buf = new uint64_t[NUM_TIMES];
+	uint64_t * buf = new uint64_t[NUM_TIMES];
 
 	buf[0] = from_sent;
 	buf[1] = to_recvd;

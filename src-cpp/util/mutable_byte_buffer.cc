@@ -42,7 +42,7 @@ void MutableByteBuffer::write(const uint8_t *data, std::size_t nbytes) {
   }
 }
 
-uint8_t* data() {
+uint8_t* MutableByteBuffer::data() {
   uint8_t *rdata = new uint8_t[size()];
   std::memcpy(rdata, data_, size());
   return rdata;
