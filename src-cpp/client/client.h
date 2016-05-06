@@ -18,20 +18,20 @@ using asio::ip::udp;
 
 class Client {
   public:
-    Client(asio::io_service& io_service, int p);
+    Client(asio::io_service& io_service, uint16_t p);
     void start();
 
   private:
     void receive();
     void receiveFromFile();
 
-    int port;
+    uint16_t port;
     udp::socket socket;
     udp::endpoint sender_endpoint;
-    char data[LEN];
+    uint8_t data[LEN];
     RingBuffer<MPacket*> packet_buffer;
-    std::deque<short> play_buffer;
-    short file_buf[BUFFER_LENGTH];
+    std::deque<int16_t> play_buffer;
+    int16_t file_buf[BUFFER_LENGTH];
     SndfileHandle file;
 };
 
