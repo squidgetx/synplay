@@ -32,4 +32,7 @@ std::size_t ByteBuffer::remaining() {
   return size_ - read_;
 }
 
+std::size_t ByteBuffer::size() const {
+  return size_;
+}
 

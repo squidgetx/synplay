@@ -14,6 +14,7 @@ class ByteBuffer {
     int get_short(int16_t* dst);
     std::size_t get_nshorts(int16_t* dst, std::size_t size);
     std::size_t remaining();
+    virtual std::size_t size() const;
   protected:
     uint8_t* data_;
     std::size_t read_;
