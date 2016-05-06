@@ -1,5 +1,8 @@
 #include "mpacket.h"
 
+#include "util/byte_buffer.h"
+#include "util/mutable_byte_buffer.h"
+
 MPacket::MPacket(time_t time, int16_t* p, size_t ps) : timestamp(time), payload(p), payload_size(ps) {
 
 }
@@ -17,10 +20,10 @@ time_t MPacket::get_timestamp() {
 }
 
 asio::const_buffer MPacket::pack() const {
-  std::stringbuf buf;
-  buf.sputn(reinterpret_cast<const uint8_t*>(&timestamp), sizeof(timestamp));
-  buf.sputn(reinterpret_cast<const uint8_t*>(payload), payload_size);
-  return asio::const_buffer(buf.str().data(), sizeof(timestamp) + payload_size);
+  MutableByteBuffer buf;
+  buf.write_unsigned_long(timestamp);
+  buf.write_n_shorts(payload, payload_size);
+  return asio::const_buffer(buf.data(), b.size());
 }
 
 MPacket * MPacket::unpack(uint8_t* p, std::size_t size) {
