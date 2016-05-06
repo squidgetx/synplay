@@ -74,13 +74,13 @@ void Client::start() {
   err = Pa_OpenDefaultStream(&stream, 0, 2, paInt16, SAMPLE_RATE, 64, pacallback, &play_buffer);
   if (err != paNoError) goto error;
 
-  receiveFromFile();
+  receive();//FromFile();
 
   err = Pa_StartStream(stream);
   if (err != paNoError) goto error;
 
 
-  for (;;) {}
+  //for (;;) {}
   //Pa_StopStream(stream);
   //Pa_CloseStream(stream);
   //Pa_Terminate();
