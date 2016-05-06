@@ -13,7 +13,7 @@
 class Master
 {
   public:
-    Master(std::string &ip_addr, int port, std::string filename) :
+    Master(std::string &ip_addr, uint16_t port, std::string filename) :
       io_service(),
       remote_endpt(asio::ip::address::from_string(ip_addr),port),
       socket(io_service, asio::ip::udp::endpoint(asio::ip::udp::v4(), 0)){
