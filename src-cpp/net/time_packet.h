@@ -6,7 +6,7 @@
 
 #define NUM_TIMES (5)
 
-typedef mtime_t uint64_t;
+typedef uint64_t mtime_t;
 
 class TPacket {
   public:
