@@ -36,5 +36,15 @@ MPacket * MPacket::unpack(uint8_t* p, std::size_t size) {
 }
 
 void MPacket::print() {
-  std::cout << "<MPacket timestamp: " << timestamp << " payload size: " << payload_size << std::endl;
+  std::cout << "<MPacket timestamp: " << timestamp << " payload size: " << payload_size << ">" << std::endl;
 }
+
+void MPacket::print_all() {
+  std::cout << "<MPacket timestamp: " << timestamp << " payload size: " << payload_size << " data: ";
+  for(int i = 0; i < payload_size; i++) {
+    printf("%i ", payload[i]);
+  }
+  std::cout << ">" << std::endl;
+}
+
+    

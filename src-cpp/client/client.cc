@@ -1,6 +1,8 @@
 #include "client.h"
 #include <sndfile.hh>
 
+static int received = 0;
+
 static int pacallback(const void *inputBuffer, void* outputBuffer,
     unsigned long framesPerBuffer,
     const PaStreamCallbackTimeInfo* timeInfo,
@@ -10,16 +12,22 @@ static int pacallback(const void *inputBuffer, void* outputBuffer,
   int16_t *audio_out = (int16_t*) outputBuffer;
   std::deque<int16_t> * play_buffer = (std::deque<int16_t> *) userData;
   // copy as much from the byte buffer to the
-  // audio out
+  // audio outputBuffer
   for(unsigned long i = 0; i < framesPerBuffer; i++) {
-    if (play_buffer->size() < 2)
-      break;
-
+    if (play_buffer->size() < 2) {
+      *(audio_out++) = 0;
+      *(audio_out++) = 0;
+      continue;
+    }
+   // std::cout << "playbuffer size is " << play_buffer->size() << std::endl;
     *(audio_out++) = play_buffer->front();
+   // printf("%i ", play_buffer->front());
     play_buffer->pop_front();
     *(audio_out++) = play_buffer->front();
+   // printf("%i ", play_buffer->front());
     play_buffer->pop_front();
   }
+ // printf("\n");
 
 
   return paContinue;
@@ -35,19 +43,16 @@ void Client::receiveFromFile() {
 }
 
 void Client::receive() {
+//  std::cout << received << std::endl;
   socket.async_receive_from(
     asio::buffer(data, 1024), sender_endpoint,
     [this](std::error_code ec, std::size_t bytes_recvd)
     {
+      received++;
       if (!ec && bytes_recvd > 0)
       {
-        std::cout << "got " << bytes_recvd << "bytes" << std::endl;
-        for(std::size_t i = 0; i < bytes_recvd; i++) {
-          printf("%02x ", data[i]);
-        }
-        std::cout << std::endl;
         MPacket * mpacket = MPacket::unpack(data, bytes_recvd);
-        mpacket->print();
+        //mpacket->print_all();
         // For now just put everything in the play buffer
        // packet_buffer.put(mpacket);
         play_buffer.insert(play_buffer.end(), mpacket->get_payload(), mpacket->get_payload() + mpacket->get_payload_size());

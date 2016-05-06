@@ -42,7 +42,10 @@ void Master::receive_timesync_reply() {
   );
 }*/
 
+static int sent = 0;
+
 void Master::send(){
+  sent++;
   int16_t *buf = new int16_t[BUFFER_SIZE] ;
 
   sf_count_t num_read = file.read (buf, BUFFER_SIZE) ;
@@ -52,15 +55,17 @@ void Master::send(){
   }
 
   time_t now = get_millisecond_time();
-
   MPacket mp(now,buf,num_read);
-
+ // std::cerr << "sending ";
+ // mp.print_all();
   socket.async_send_to(
     asio::buffer(mp.pack()), remote_endpt,
     [this](error_code /*ec*/, size_t /*bytes_sent*/)
     {
       this->send();
     });
+
+//  std::cout << sent << std::endl;
 }
 
 void Master::run(){

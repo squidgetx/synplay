@@ -15,6 +15,7 @@ class MPacket {
     size_t get_payload_size();
     time_t get_timestamp();
     void print();
+    void print_all();
     asio::const_buffer pack() const;
     static MPacket* unpack(uint8_t * p, std::size_t n);
 
