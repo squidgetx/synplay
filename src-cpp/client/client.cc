@@ -14,7 +14,7 @@ static int pacallback(const void *inputBuffer, void* outputBuffer,
   bool endl = false;
   std::cout << framesPerBuffer << std::endl;
   for(int i = 0; i < framesPerBuffer; i++) {
-    if (play_buffer->empty())
+    if (play_buffer->size() < 2)
       break;
 
     *(audio_out++) = play_buffer->front();
