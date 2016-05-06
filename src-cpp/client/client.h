@@ -18,7 +18,7 @@ using asio::ip::udp;
 
 class Client {
   public:
-    Client(asio::io_service& io_s, uint16_t p);
+    Client(asio::io_service& io_service, uint16_t p);
     void start();
 
   private:
@@ -33,7 +33,6 @@ class Client {
     std::deque<int16_t> play_buffer;
     int16_t file_buf[BUFFER_LENGTH];
     SndfileHandle file;
-    asio::io_service& io_service;
 };
 
 #endif
