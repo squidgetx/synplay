@@ -10,19 +10,18 @@
 
 class MPacket {
   public:
-    MPacket(long time, short* p, int psize);
-    short* get_payload();
-    int get_payload_size();
-    long get_timestamp();
+    MPacket(time_t time, int16_t* p, size_t psize);
+    int16_t* get_payload();
+    size_t get_payload_size();
+    time_t get_timestamp();
     void print();
     asio::const_buffer pack() const;
-    static MPacket* unpack(char * p, std::size_t n);
+    static MPacket* unpack(uint8_t * p, std::size_t n);
 
   private:
-    short* payload;
-    int payload_size;
-    long timestamp;
-
+    int16_t* payload;
+    size_t payload_size;
+    time_t timestamp;
 };
 
 
