@@ -6,6 +6,7 @@
 #include <fstream>
 #include "asio.hpp"
 #include "util/mpacket.h"
+#include "net/tpacket.h"
 #include <sndfile.hh>
 
 #define BUFFER_SIZE (1024)
@@ -32,6 +33,8 @@ class Master
   private:
     void send();
     void send_packet(const MPacket& mp);
+    void receive_timesync_reply();
+    void send_timesync();
 
     asio::io_service io_service;
     asio::ip::udp::endpoint remote_endpt;
