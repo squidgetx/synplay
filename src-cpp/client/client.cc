@@ -19,7 +19,6 @@ static int pacallback(const void *inputBuffer, void* outputBuffer,
       *(audio_out++) = 0;
       continue;
     }
-   // std::cout << "playbuffer size is " << play_buffer->size() << std::endl;
     *(audio_out++) = play_buffer->front();
    // printf("%i ", play_buffer->front());
     play_buffer->pop_front();
@@ -61,7 +60,7 @@ void Client::receive() {
     });
 }
 
-Client::Client(asio::io_service& io_service, uint16_t p) : port(p), packet_buffer(100), play_buffer(4096),
+Client::Client(asio::io_service& io_service, uint16_t p) : port(p), packet_buffer(100),
   socket(io_service, udp::endpoint(udp::v4(), p)) {
   file = SndfileHandle("../yellow.wav");
   std::cout << file.samplerate() << " " << file.channels() << std::endl;
