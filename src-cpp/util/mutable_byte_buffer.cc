@@ -3,11 +3,11 @@
 #include <cstdint>
 #include <cstring>
 
-MutableByteBuffer::MutableByteBuffer(std::size_t initial_size) : ByteBuffer(NULL, initial_size) {
+MutableByteBuffer::MutableByteBuffer(std::size_t initial_size) : ByteBuffer(NULL, initial_size), write(0) {
   data_ = new uint8_t[size_];
 }
 
-MutableByteBuffer::MutableByteBuffer(const MutableByteBuffer &other) : ByteBuffer(NULL, other.size_) {
+MutableByteBuffer::MutableByteBuffer(const MutableByteBuffer &other) : ByteBuffer(NULL, other.size_), write(0) {
   read_ = other.read_;
   write_ = other.write_;
   data_ = new uint8_t[size_];
