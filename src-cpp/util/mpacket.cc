@@ -24,13 +24,13 @@ asio::const_buffer MPacket::pack() const {
 }
 
 MPacket * MPacket::unpack(char* p, std::size_t size) {
-  std::stringbuf buf;
-  buf.str(p);
-  long timestamp;
+  ByteBuffer buf(p, size);
+  long timestamp = 0;
   short * payload = new short[PACKET_SIZE];
-  buf.sgetn(reinterpret_cast<char*>(&timestamp), sizeof(timestamp));
-  buf.sgetn(reinterpret_cast<char*>(payload), size - sizeof(timestamp));
-  return new MPacket(timestamp, payload, size - sizeof(timestamp));
+  buf.get_long(&timestamp);
+  int payload_size = buf.remaining() / sizeof(short);
+  buf.get_nshorts(payload, payload_size);
+  return new MPacket(timestamp, payload, payload_size);
 }
 
 void MPacket::print() {
