@@ -19,12 +19,11 @@ typedef struct
 class TPacket {
   public:
     TPacket(mtime_t from_sent = 0, mtime_t to_recvd = 0, mtime_t to_sent = 0, mtime_t from_recvd = 0);
-    ntp_time get_times();
     asio::const_buffer pack() const;
     static TPacket* unpack(uint64_t* p, std::size_t n);
+    ntp_time times;
 
   private:
-    ntp_time times;
 };
 
 
