@@ -12,13 +12,15 @@ static int pacallback(const void *inputBuffer, void* outputBuffer,
   // copy as much from the byte buffer to the
   // audio out
   for(unsigned long i = 0; i < framesPerBuffer; i++) {
-    if (play_buffer->size() < 2)
-      break;
-
-    *(audio_out++) = play_buffer->front();
-    play_buffer->pop_front();
-    *(audio_out++) = play_buffer->front();
-    play_buffer->pop_front();
+    if (play_buffer->size() < 2) {
+      *(audio_out++) = 0;
+      *(audio_out++) = 0;
+    } else {
+      *(audio_out++) = play_buffer->front();
+      play_buffer->pop_front();
+      *(audio_out++) = play_buffer->front();
+      play_buffer->pop_front();
+    }
   }
 
 
@@ -56,7 +58,7 @@ void Client::receive() {
     });
 }
 
-Client::Client(asio::io_service& io_service, uint16_t p) : port(p), packet_buffer(100), play_buffer(4096),
+Client::Client(asio::io_service& io_service, uint16_t p) : port(p), packet_buffer(100),
   socket(io_service, udp::endpoint(udp::v4(), p)) {
   file = SndfileHandle("../yellow.wav");
   std::cout << file.samplerate() << " " << file.channels() << std::endl;
