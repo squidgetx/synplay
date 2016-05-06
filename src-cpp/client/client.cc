@@ -58,8 +58,8 @@ void Client::receive() {
     });
 }
 
-Client::Client(asio::io_service& io_service, uint16_t p) : port(p), packet_buffer(100),
-  socket(io_service, udp::endpoint(udp::v4(), p)) {
+Client::Client(asio::io_service& io_s, uint16_t p) : port(p), packet_buffer(100),
+  socket(io_s, udp::endpoint(udp::v4(), p)), io_service(io_s) {
   file = SndfileHandle("../yellow.wav");
   std::cout << file.samplerate() << " " << file.channels() << std::endl;
   std::cout << "Listening on " << port << std::endl;
@@ -81,6 +81,7 @@ void Client::start() {
   err = Pa_StartStream(stream);
   if (err != paNoError) goto error;
 
+  io_service.run();
 
   //for (;;) {}
   //Pa_StopStream(stream);
