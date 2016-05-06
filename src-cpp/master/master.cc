@@ -12,16 +12,16 @@ using namespace std;
 using namespace asio::ip;
 
 void Master::send(){
-  short *buf = new short[BUFFER_SIZE] ;
+  int16_t *buf = new int16_t[BUFFER_SIZE] ;
 
-  long num_read = file.read (buf, BUFFER_SIZE) ;
+  sf_count_t num_read = file.read (buf, BUFFER_SIZE) ;
 
   if (!num_read){
     return;
   }
 
 
-  long now = get_millisecond_time();
+  time_t now = get_millisecond_time();
 
   MPacket mp(now,buf,num_read);
 
