@@ -12,7 +12,7 @@ static int pacallback(const void *inputBuffer, void* outputBuffer,
   // copy as much from the byte buffer to the
   // audio out
   bool endl = false;
-  std::cout << framesPerBuffer << std::endl;
+ // std::cout << framesPerBuffer << std::endl;
   for(int i = 0; i < framesPerBuffer; i++) {
     if (play_buffer->size() < 2)
       break;
@@ -21,6 +21,15 @@ static int pacallback(const void *inputBuffer, void* outputBuffer,
     play_buffer->pop_front();
     *(audio_out++) = play_buffer->front();
     play_buffer->pop_front();
+    if (*audio_out != 0) {
+    //  endl = true;
+  //    printf("%04x ", *audio_out);
+    }
+    audio_out++;
+  }
+
+  if (endl) {
+    std::cout << std::endl;
   }
 
   return paContinue;
@@ -43,6 +52,10 @@ void Client::receive() {
       if (!ec && bytes_recvd > 0)
       {
         std::cout << "got " << bytes_recvd << "bytes" << std::endl;
+        for(int i = 0; i < bytes_recvd; i++) {
+          printf("%02x ", data[i]);
+        }
+        std::cout << std::endl;
         MPacket * mpacket = MPacket::unpack(data, bytes_recvd);
         mpacket->print();
         // For now just put everything in the play buffer

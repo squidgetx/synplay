@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include "asio.hpp"
+#include "bytebuffer.h"
 
 class MPacket {
   public:
