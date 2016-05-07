@@ -11,12 +11,18 @@
 typedef uint64_t mtime_t;
 typedef int64_t mtime_offset_t;
 
+typedef enum {
+  INCOMPLETE = 0,
+  COMPLETE = 1 // the offset field has been set.
+} TPacketType;
+
 class TPacket : public Packet {
   public:
-    TPacket(mtime_t f_sent_ = 0, mtime_t t_recvd_ = 0, mtime_t t_sent_ = 0, mtime_t f_recvd_ = 0, mtime_offset_t offset_ = 0); 
+    TPacket(TPacketType ptt = INCOMPLETE, mtime_t f_sent_ = 0, mtime_t t_recvd_ = 0, mtime_t t_sent_ = 0, mtime_t f_recvd_ = 0, mtime_offset_t offset_ = 0); 
     asio::const_buffer pack() const;
     static TPacket* unpack(uint8_t* buf, std::size_t size);
 
+    TPacketType tp_type;
     mtime_t from_sent;
     mtime_t to_recvd;
     mtime_t to_sent;
