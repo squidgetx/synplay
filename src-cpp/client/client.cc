@@ -66,14 +66,14 @@ void Client::receive() {
   socket.async_receive_from(
     asio::buffer(data, LEN), sender_endpoint,
     [this](std::error_code ec, std::size_t bytes_recvd)
-    {        
-    
+    {
+
       // immediately grab the receipt time
       mtime_t to_recvd = get_millisecond_time();
-      
+
       received++;
       if (!ec && bytes_recvd > 0)
-      { 
+      {
         Packet *packet = Packet::unpack(data,bytes_recvd);
         switch (packet->get_type()){
           case TIME:
@@ -81,10 +81,10 @@ void Client::receive() {
             break;
           case DATA:
             receive_data(static_cast<MPacket *> (packet));
-            break;  
+            break;
         }
         receive();
-      }     
+      }
     }
   );
 }
@@ -131,13 +131,37 @@ Client::Client(asio::io_service& io_service, uint16_t p) : port(p), packet_buffe
 }
 
 void Client::start() {
+  PaHostApiIndex host_idx;
+  PaDeviceIndex device_idx;
+  PaTime latency;
 
   /* Set up Port Audio */
   PaError err = Pa_Initialize();
   if (err != paNoError) goto error;
 
+  // Determine Device Index
+  host_idx = Pa_HostApiTypeIdToHostApiIndex(paJACK);
+  device_idx = Pa_GetDefaultOutputDevice();
+  if (host_idx != paHostApiNotFound) {
+    device_idx = Pa_HostApiDeviceIndexToDeviceIndex(host_idx, 0);
+    if (device_idx == paInvalidDevice) {
+      device_idx = Pa_GetDefaultOutputDevice();
+      std::cerr << "Unable to use JACK." << std::endl;
+    }
+  }
+
+  latency = Pa_GetDeviceInfo(device_idx)->defaultLowOutputLatency;
+
+  PaStreamParameters output_parameters;
+  output_parameters.device = device_idx;
+  output_parameters.channelCount = 2;
+  output_parameters.sampleFormat = paInt16;
+  output_parameters.suggestedLatency = latency;
+  output_parameters.hostApiSpecificStreamInfo = NULL;
+
   /* No input, 2 stereo out */
-  err = Pa_OpenDefaultStream(&stream, 0, 2, paInt16, SAMPLE_RATE, 64, pacallback, &play_buffer);
+  err = Pa_OpenStream(&stream, NULL, &output_parameters,
+      SAMPLE_RATE, 64, paNoFlag, pacallback, &play_buffer);
   if (err != paNoError) goto error;
 
   err = Pa_StartStream(stream);
@@ -149,7 +173,7 @@ void Client::start() {
 
 
    // when we receive a timestamp, add pa_offset then convert to PaTime
-  
+
 
   //for (;;) {}
   //Pa_StopStream(stream);
