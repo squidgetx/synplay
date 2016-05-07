@@ -80,8 +80,14 @@ void Client::receive_data(MPacket *mpacket) {
 }
 
 void Client::receive_timesync(TPacket *tpacket, mtime_t to_recvd) {
-        // and send the reply (after storing the to_sent time)
+        tpacket->to_recvd = to_recvd;
         tpacket->to_sent = get_millisecond_time();
+
+        if (tpacket->offset != 0) {
+          offset = tpacket->offset;
+        }
+
+        // and send the reply
         socket.async_send_to(
             asio::buffer(tpacket->pack()), sender_endpoint,
             [this](std::error_code, std::size_t) {
@@ -91,7 +97,7 @@ void Client::receive_timesync(TPacket *tpacket, mtime_t to_recvd) {
 }
 
 Client::Client(asio::io_service& io_service, uint16_t p) : port(p), packet_buffer(100),
-  socket(io_service, udp::endpoint(udp::v4(), p)) {
+  socket(io_service, udp::endpoint(udp::v4(), p)), offset(0) {
   file = SndfileHandle("../yellow.wav");
   std::cout << file.samplerate() << " " << file.channels() << std::endl;
   std::cout << "Listening on " << port << std::endl;

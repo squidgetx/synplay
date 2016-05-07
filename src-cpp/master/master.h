@@ -32,7 +32,7 @@ class Master
     ~Master ();
 
   private:
-    void send();
+    void send_data();
     void send_packet(const MPacket& mp);
     void receive_timesync_reply();
     void send_timesync();

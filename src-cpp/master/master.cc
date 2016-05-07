@@ -50,13 +50,15 @@ void Master::receive_timesync_reply() {
               // do we need timeouts on this shit
             }
         );
+        // ready to start sending data
+        send_data();
       }
   );
 }
 
 static int sent = 0;
 
-void Master::send(){
+void Master::send_data(){
   sent++;
   int16_t *buf = new int16_t[BUFFER_SIZE] ;
 
@@ -74,13 +76,13 @@ void Master::send(){
     asio::buffer(mp.pack()), remote_endpt,
     [this](error_code /*ec*/, size_t /*bytes_sent*/)
     {
-      this->send();
+      this->send_data();
     });
 
 //  std::cout << sent << std::endl;
 }
 
 void Master::run(){
-  this->send();
+  this->send_timesync();
   io_service.run();
 }

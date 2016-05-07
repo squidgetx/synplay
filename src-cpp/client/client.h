@@ -42,6 +42,8 @@ class Client {
     std::deque<int16_t> play_buffer;
     int16_t file_buf[BUFFER_LENGTH];
     SndfileHandle file;
+
+    mtime_t offset;
 };
 
 #endif
