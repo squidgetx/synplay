@@ -13,13 +13,15 @@ PacketType Packet::get_type(){
 }
 
 Packet* Packet::unpack(uint8_t* buf, std::size_t size){
-    uint8_t type = *(buf++);
+    uint8_t type = buf[0];
     switch (type) {
       case TIME:
-        return TPacket::unpack(buf,size);
+        std::cerr << "recvd TIME packet" << std::endl;
+        return TPacket::unpack(buf + 1,size);
       case DATA:
-        return MPacket::unpack(buf,size);
-      defaut:
+        std::cerr << "recvd DATA packet" << std::endl;
+        return MPacket::unpack(buf + 1,size);
+      default:
         std::cerr << "Data corruption detected: Invalid flag." << std::endl;
     }
 }

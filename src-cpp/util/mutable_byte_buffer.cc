@@ -18,6 +18,10 @@ MutableByteBuffer::~MutableByteBuffer() {
   delete data_;
 }
 
+void MutableByteBuffer::write_uint8(uint8_t val) {
+  write(&val,sizeof(val));
+}
+
 void MutableByteBuffer::write_unsigned_long(uint64_t val) {
   write(reinterpret_cast<uint8_t *>(&val), sizeof(val));
 }

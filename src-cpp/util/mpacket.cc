@@ -20,12 +20,14 @@ time_t MPacket::get_timestamp() {
 
 asio::const_buffer MPacket::pack() const {
   MutableByteBuffer buf;
+  buf.write_uint8(DATA);
   buf.write_unsigned_long(timestamp);
   buf.write_n_shorts(payload, payload_size);
   return asio::const_buffer(buf.data(), buf.size());
 }
 
 MPacket * MPacket::unpack(uint8_t* p, std::size_t size) {
+  std::cerr << "mpacket::unpack" << std::endl;
   ByteBuffer buf(p, size);
   uint64_t timestamp = 0;
   int16_t * payload = new int16_t[PACKET_SIZE];

@@ -6,18 +6,19 @@ TPacket::TPacket(mtime_t f_sent_, mtime_t t_recvd_, mtime_t t_sent_, mtime_t f_r
 
 asio::const_buffer TPacket::pack() const{
 
-	mtime_t * buf = new mtime_t[NUM_TIMES];
+  MutableByteBuffer buf;
+  buf.write_uint8(TIME);
+  buf.write_unsigned_long(from_sent);
+  buf.write_unsigned_long(to_recvd);
+  buf.write_unsigned_long(to_sent);
+  buf.write_unsigned_long(from_recvd);
+  buf.write_unsigned_long(offset);
 
-	buf[0] = from_sent;
-	buf[1] = to_recvd;
-	buf[2] = to_sent;
-	buf[3] = from_recvd;
-	buf[4] = offset;
-
-	return asio::const_buffer(buf, NUM_TIMES);
+  return asio::const_buffer(buf.data(), buf.size());
 }
 
 TPacket* TPacket::unpack(uint8_t* buf, std::size_t size){
+  std::cerr << "tpacket::unpack" << std::endl;
   mtime_t *arr = reinterpret_cast<mtime_t *> (buf);
 	return new TPacket(arr[0],arr[1],arr[2],arr[3],arr[4]);
 }
