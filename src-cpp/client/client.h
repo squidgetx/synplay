@@ -28,6 +28,7 @@ class Client {
     void start();
 
   private:
+    mtime_t get_master_clock_millis();
     void receiveFromFile();
 
     void receive();

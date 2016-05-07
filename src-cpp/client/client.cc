@@ -3,6 +3,10 @@
 #include "net/time_packet.h"
 #include "util/syntime.h"
 
+mtime_t Client::get_master_clock_millis() {
+  return get_millisecond_time() + offset;
+}
+
 static int received = 0;
 
 static int pacallback(const void *inputBuffer, void* outputBuffer,
