@@ -31,15 +31,16 @@ void Master::receive_timesync_reply() {
       [this](error_code e, size_t bytes_recvd) {
         // calculate sum shit
 
-      // immediately grab the receipt time  
-      mtime_t from_recv = get_millisecond_time();
+        // immediately grab the receipt time  
+        mtime_t from_recv = get_millisecond_time();
         
-      // unpack the time packet
-        TPacket * tp = TPacket::unpack(tp_buffer, bytes_recvd);
+        // unpack the time packet
+        Packet * p = Packet::unpack(tp_buffer, bytes_recvd);
+        TPacket * tp = static_cast<TPacket *> (p);
         tp->from_recvd = from_recv;
 
         // calculate the offset
-        mtime_t offset = (tp->to_recvd - tp->from_sent) - (tp->to_sent - tp->from_recvd);
+        mtime_t offset = ((tp->to_recvd - tp->from_sent) - (tp->to_sent - tp->from_recvd))/2;
         tp->offset = offset;
 
         // and send the reply
