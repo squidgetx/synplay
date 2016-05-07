@@ -6,7 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include "asio.hpp"
-#include "bytebuffer.h"
+#include "util/bytebuffer.h"
 #include "net/packet.h"
 
 class MPacket : public Packet {

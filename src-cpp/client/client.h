@@ -9,7 +9,7 @@
 #include <portaudio.h>
 #include <sndfile.hh>
 #include "util/ringbuf.h"
-#include "util/mpacket.h"
+#include "net/mpacket.h"
 #include "net/time_packet.h"
 #include "net/packet.h"
 

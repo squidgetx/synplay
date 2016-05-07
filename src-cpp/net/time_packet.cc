@@ -16,7 +16,6 @@ asio::const_buffer TPacket::pack() const{
 }
 
 TPacket* TPacket::unpack(const uint8_t* buf, std::size_t size){
-  
   TPacketType type;
   switch (buf[0]) {
     case INCOMPLETE:
