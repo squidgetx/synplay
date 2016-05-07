@@ -61,7 +61,6 @@ void Client::receive() {
             receive_timesync(static_cast<TPacket *> (packet),to_recvd);
             break;
           case DATA:
-            std::cerr << "lol" << std::endl;
             receive_data(static_cast<MPacket *> (packet));
             break;  
         }
