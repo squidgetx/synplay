@@ -15,7 +15,7 @@ class Packet {
     static Packet* unpack(uint8_t* buf, std::size_t size);
     PacketType get_type();
 
-  private:
+  protected:
     PacketType packet_type;
 };
 
