@@ -3,19 +3,33 @@
 #include "net/time_packet.h"
 #include "util/syntime.h"
 
-mtime_t Client::get_master_clock_millis() {
+volatile mtime_offset_t offset;
+
+static mtime_t get_master_clock_millis() {
   return get_millisecond_time() - offset;
 }
 
 static int received = 0;
+volatile mtime_t start_t = 0;
+volatile int state = 0;
 
 static int pacallback(const void *inputBuffer, void* outputBuffer,
     unsigned long framesPerBuffer,
     const PaStreamCallbackTimeInfo* timeInfo,
     PaStreamCallbackFlags statusFlags,
     void *userData) {
-
   int16_t *audio_out = (int16_t*) outputBuffer;
+  if (state == 0) {
+    if (start_t == 0 || start_t > get_master_clock_millis()) {
+      for(unsigned long i = 0; i < framesPerBuffer; i++) {
+          *(audio_out++) = 0;
+          *(audio_out++) = 0;
+      }
+      return paContinue;
+    }
+    state = 1;
+  }
+
   std::deque<int16_t> * play_buffer = (std::deque<int16_t> *) userData;
   // copy as much from the byte buffer to the
   // audio outputBuffer
@@ -74,12 +88,11 @@ void Client::receive() {
 }
 
 void Client::receive_data(MPacket *mpacket) {
-//  std::cout << received << std::endl;
-
-       //mpacket->print_all();
-        // For now just put everything in the play buffer
-       // packet_buffer.put(mpacket);
+        mpacket->print();
         play_buffer.insert(play_buffer.end(), mpacket->get_payload(), mpacket->get_payload() + mpacket->get_payload_size());
+        if (start_t == 0) {
+          start_t = mpacket->get_timestamp();
+        }
 }
 
 void Client::receive_timesync(TPacket *tpacket, mtime_t to_recvd) {

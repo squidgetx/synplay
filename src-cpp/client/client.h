@@ -44,7 +44,7 @@ class Client {
     int16_t file_buf[BUFFER_LENGTH];
     SndfileHandle file;
 
-    mtime_offset_t offset;
+    //mtime_offset_t offset;
 };
 
 #endif
