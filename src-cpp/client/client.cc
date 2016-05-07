@@ -10,7 +10,7 @@ static mtime_t get_master_clock_millis() {
 }
 
 static int received = 0;
-volatile mtime_t start_t = 0;
+volatile PaTime start_t = 0;
 volatile int state = 0;
 
 static int pacallback(const void *inputBuffer, void* outputBuffer,
@@ -20,7 +20,9 @@ static int pacallback(const void *inputBuffer, void* outputBuffer,
     void *userData) {
   int16_t *audio_out = (int16_t*) outputBuffer;
   if (state == 0) {
-    if (start_t == 0 || start_t > get_master_clock_millis()) {
+    PaTime play_time = timeInfo->outputBufferDacTime;
+  //  std::cerr << "Current time: " << timeInfo->currentTime << " Start t: " << start_t << std::endl;
+    if (start_t == 0 || start_t >= play_time) {
       for(unsigned long i = 0; i < framesPerBuffer; i++) {
           *(audio_out++) = 0;
           *(audio_out++) = 0;
@@ -88,10 +90,12 @@ void Client::receive() {
 }
 
 void Client::receive_data(MPacket *mpacket) {
-        mpacket->print();
+        //mpacket->print();
         play_buffer.insert(play_buffer.end(), mpacket->get_payload(), mpacket->get_payload() + mpacket->get_payload_size());
         if (start_t == 0) {
-          start_t = mpacket->get_timestamp();
+          // convert this to stream time
+          start_t  = (PaTime) (mpacket->get_timestamp() + offset + pa_offset) / 1000;
+          std::cerr << "Start_t set to " << start_t << std::endl;
         }
 }
 
@@ -101,7 +105,13 @@ void Client::receive_timesync(TPacket *tpacket, mtime_t to_recvd) {
 
         if (tpacket->tp_type == COMPLETE) {
           offset = tpacket->offset;
-          std::cerr << "setting offset: " << offset << std::endl;
+          std::cerr << "setting master/client offset: " << offset << std::endl;
+          // Get offset between stream time and current time
+          PaTime pa_start_time = Pa_GetStreamTime(stream);
+          std::cerr << "Stream time: " << pa_start_time << std::endl;
+          mtime_t system_start_time = get_millisecond_time();
+          pa_offset = ((mtime_t) pa_start_time * 1000) - system_start_time;
+          std::cerr << "pa_offset: " << pa_offset << std::endl;
         }
 
         // and send the reply
@@ -125,17 +135,21 @@ void Client::start() {
   /* Set up Port Audio */
   PaError err = Pa_Initialize();
   if (err != paNoError) goto error;
-  PaStream *stream;
 
   /* No input, 2 stereo out */
   err = Pa_OpenDefaultStream(&stream, 0, 2, paInt16, SAMPLE_RATE, 64, pacallback, &play_buffer);
   if (err != paNoError) goto error;
 
-  receive();//FromFile();
-
   err = Pa_StartStream(stream);
   if (err != paNoError) goto error;
 
+  Pa_Sleep(1000);
+
+  receive();//FromFile();
+
+
+   // when we receive a timestamp, add pa_offset then convert to PaTime
+  
 
   //for (;;) {}
   //Pa_StopStream(stream);
