@@ -1,12 +1,12 @@
 #include "time_packet.h"
 
-TPacket::TPacket(TPacketType ptt, mtime_t f_sent_, mtime_t t_recvd_, mtime_t t_sent_, mtime_t f_recvd_, mtime_offset_t offset_) : tp_type(ptt), from_sent(f_sent_), to_recvd(t_recvd_), to_sent(t_sent_), from_recvd(f_recvd_), offset(offset_), Packet::Packet(TIME) {
+TPacket::TPacket(TPacketType ptt, mtime_t f_sent_, mtime_t t_recvd_, mtime_t t_sent_, mtime_t f_recvd_, mtime_offset_t offset_) : tp_type(ptt), from_sent(f_sent_), to_recvd(t_recvd_), to_sent(t_sent_), from_recvd(f_recvd_), offset(offset_), Packet::Packet(PacketType::TIME) {
 
 }
 
 asio::const_buffer TPacket::pack() const{
   MutableByteBuffer buf;
-  buf.write_uint8(TIME);
+  buf.write_uint8(static_cast<uint8_t>(PacketType::TIME));
   buf.write_uint8(tp_type);
   buf.write_unsigned_long(from_sent);
   buf.write_unsigned_long(to_recvd);

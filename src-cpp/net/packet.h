@@ -3,10 +3,10 @@
 
 #include "asio.hpp"
 
-typedef enum {
+enum struct PacketType {
   TIME = 0,
   DATA = 1
-} PacketType;
+};
 
 class Packet {
   public:

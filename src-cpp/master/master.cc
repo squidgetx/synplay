@@ -2,8 +2,10 @@
 
 #include "master/master.h"
 #include "util/syntime.h"
+#include "util/assert.h"
 #include "net/mpacket.h"
 #include "net/time_packet.h"
+#include "net/packet.h"
 
 #include <string>
 
@@ -33,9 +35,9 @@ void Master::receive_timesync_reply() {
 
         // immediately grab the receipt time  
         mtime_t from_recv = get_millisecond_time();
-        
         // unpack the time packet
         Packet * p = Packet::unpack(tp_buffer, bytes_recvd);
+        check_or_die(p->get_type() == PacketType::TIME);
         TPacket * tp = static_cast<TPacket *> (p);
         tp->from_recvd = from_recv;
         tp->tp_type = COMPLETE;

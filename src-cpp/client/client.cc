@@ -60,10 +60,10 @@ void Client::receive() {
       { 
         Packet *packet = Packet::unpack(data,bytes_recvd);
         switch (packet->get_type()){
-          case TIME:
+          case PacketType::TIME:
             receive_timesync(static_cast<TPacket *> (packet),to_recvd);
             break;
-          case DATA:
+          case PacketType::DATA:
             receive_data(static_cast<MPacket *> (packet));
             break;  
         }
