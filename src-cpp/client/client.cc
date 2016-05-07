@@ -1,5 +1,7 @@
 #include "client.h"
 #include <sndfile.hh>
+#include "net/time_packet.h"
+#include "util/syntime.h"
 
 static int received = 0;
 
@@ -42,6 +44,10 @@ void Client::receiveFromFile() {
 }
 
 void Client::receive() {
+ receive_data();
+}
+
+void Client::receive_data() {
 //  std::cout << received << std::endl;
   socket.async_receive_from(
     asio::buffer(data, LEN), sender_endpoint,
@@ -60,7 +66,6 @@ void Client::receive() {
       receive();
     });
 }
-
 void Client::receive_timesync() {
   socket.async_receive_from(
       asio::buffer(tp_buffer, TP_BUFFER_SIZE), sender_endpoint,
@@ -77,10 +82,13 @@ void Client::receive_timesync() {
         tp->to_sent = get_millisecond_time();
         socket.async_send_to(
             asio::buffer(tp->pack()), sender_endpoint,
-            [this](error_code, std::size_t) {
+            [this](std::error_code, std::size_t) {
               // reply sent
             }
         );
+
+        // and start receiving again
+        receive();
       }
     );
 }

@@ -28,8 +28,10 @@ class Client {
     void start();
 
   private:
-    void receive();
     void receiveFromFile();
+
+    void receive();
+    void receive_data();
     void receive_timesync();
 
     uint16_t port;
