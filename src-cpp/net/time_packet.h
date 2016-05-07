@@ -10,10 +10,9 @@ typedef uint64_t mtime_t;
 
 class TPacket {
   public:
-    TPacket(mtime_t from_sent = 0, mtime_t to_recvd = 0, mtime_t to_sent = 0, 
-        mtime_t from_recvd = 0, mtime_t offset = 0);
+    TPacket(mtime_t f_sent_ = 0, mtime_t t_recvd_ = 0, mtime_t t_sent_ = 0, mtime_t f_recvd_ = 0, mtime_t offset_ = 0); 
     asio::const_buffer pack() const;
-    static TPacket* unpack(uint64_t* buf, std::size_t n);
+    static TPacket* unpack(mtime_t* buf);
 
     mtime_t from_sent;
     mtime_t to_recvd;

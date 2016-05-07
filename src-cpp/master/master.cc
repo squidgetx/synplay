@@ -3,6 +3,7 @@
 #include "master/master.h"
 #include "util/syntime.h"
 #include "util/mpacket.h"
+#include "net/time_packet.h"
 
 #include <string>
 
@@ -10,9 +11,9 @@
 
 using namespace std;
 using namespace asio::ip;
-/*
+
 void Master::send_timesync() {
-  TPacket tp();
+  TPacket tp;
   socket.async_send_to(
       asio::buffer(tp.pack()), remote_endpt,
       [this](error_code, size_t) {
@@ -22,14 +23,14 @@ void Master::send_timesync() {
 }
 
 void Master::receive_timesync_reply() {
-  uint64_t buffer[5];
   socket.async_receive_from(
-      asio::buffer(buffer, 5), remote_endpt,
+      asio::buffer(tp_buffer, TP_BUFFER_SIZE), remote_endpt,
       [this](error_code e, size_t bytes_recvd) {
         // calculate sum shit
+
         mtime_t from_recv = get_millisecond_time();
-        TPacket * tp = TPacket::unpack(buffer);
-        mtime_t offset = (tp->to_recv - tp->from_send) - (tp->to_send - from_recv);
+        TPacket * tp = TPacket::unpack(tp_buffer);
+        mtime_t offset = (tp->to_recvd - tp->from_sent) - (tp->to_sent - tp->from_recvd);
         tp->offset = offset;
         socket.async_send_to(
             asio::buffer(tp->pack()), remote_endpt,
@@ -40,7 +41,7 @@ void Master::receive_timesync_reply() {
         );
       }
   );
-}*/
+}
 
 static int sent = 0;
 
