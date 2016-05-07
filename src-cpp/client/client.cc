@@ -44,12 +44,13 @@ void Client::receiveFromFile() {
 void Client::receive() {
 //  std::cout << received << std::endl;
   socket.async_receive_from(
-    asio::buffer(data, 1024), sender_endpoint,
+    asio::buffer(data, LEN), sender_endpoint,
     [this](std::error_code ec, std::size_t bytes_recvd)
     {
       received++;
       if (!ec && bytes_recvd > 0)
       {
+       // std::cout << bytes_recvd << std::endl;
         MPacket * mpacket = MPacket::unpack(data, bytes_recvd);
         //mpacket->print_all();
         // For now just put everything in the play buffer

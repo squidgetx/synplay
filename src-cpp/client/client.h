@@ -11,7 +11,10 @@
 #include "util/ringbuf.h"
 #include "util/mpacket.h"
 
-#define LEN 1024
+#define LEN 4096 
+// ^^ This should be approx 2x the size of Master::BUFFER_SIZE
+// since master buffer size is in shorts (2 bytes)
+
 #define BUFFER_LENGTH 1024
 #define SAMPLE_RATE 44100
 using asio::ip::udp;
