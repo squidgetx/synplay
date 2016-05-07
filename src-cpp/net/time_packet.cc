@@ -15,10 +15,10 @@ asio::const_buffer TPacket::pack() const{
   return asio::const_buffer(buf.data(), buf.size());
 }
 
-TPacket* TPacket::unpack(uint8_t* buf, std::size_t size){
-  mtime_t *u_arr = reinterpret_cast<mtime_t *> (buf);
-  mtime_offset_t *s_arr = reinterpret_cast<mtime_offset_t *> (buf + 4 * sizeof(mtime_t));
-  
+TPacket* TPacket::unpack(const uint8_t* buf, std::size_t size){
+  const mtime_t *u_arr = reinterpret_cast<const mtime_t *> (buf);
+  const mtime_offset_t *s_arr = reinterpret_cast<const mtime_offset_t *> (buf + 4 * sizeof(mtime_t));
+
   return new TPacket(u_arr[0],u_arr[1],u_arr[2],u_arr[3],s_arr[0]);
 }
 
