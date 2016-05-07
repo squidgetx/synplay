@@ -9,7 +9,9 @@
 #include <portaudio.h>
 #include <sndfile.hh>
 #include "util/ringbuf.h"
-#include "util/mpacket.h"
+#include "net/mpacket.h"
+#include "net/time_packet.h"
+#include "net/packet.h"
 
 #define LEN 4096 
 // ^^ This should be approx 2x the size of Master::BUFFER_SIZE
@@ -17,6 +19,7 @@
 
 #define BUFFER_LENGTH 1024
 #define SAMPLE_RATE 44100
+
 using asio::ip::udp;
 
 class Client {
@@ -25,8 +28,11 @@ class Client {
     void start();
 
   private:
-    void receive();
     void receiveFromFile();
+
+    void receive();
+    void receive_data(MPacket *mpacket);
+    void receive_timesync(TPacket *tpacket, mtime_t to_recvd);
 
     uint16_t port;
     udp::socket socket;
@@ -36,6 +42,8 @@ class Client {
     std::deque<int16_t> play_buffer;
     int16_t file_buf[BUFFER_LENGTH];
     SndfileHandle file;
+
+    mtime_offset_t offset;
 };
 
 #endif

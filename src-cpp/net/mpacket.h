@@ -6,9 +6,10 @@
 #include <iostream>
 #include <sstream>
 #include "asio.hpp"
-#include "bytebuffer.h"
+#include "util/bytebuffer.h"
+#include "net/packet.h"
 
-class MPacket {
+class MPacket : public Packet {
   public:
     MPacket(time_t time, int16_t* p, size_t psize);
     int16_t* get_payload();

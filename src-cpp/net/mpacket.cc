@@ -2,7 +2,7 @@
 
 #include "util/mutable_byte_buffer.h"
 
-MPacket::MPacket(time_t time, int16_t* p, size_t ps) : timestamp(time), payload(p), payload_size(ps) {
+MPacket::MPacket(time_t time, int16_t* p, size_t ps) : timestamp(time), payload(p), payload_size(ps), Packet::Packet(DATA) {
 
 }
 
@@ -20,6 +20,7 @@ time_t MPacket::get_timestamp() {
 
 asio::const_buffer MPacket::pack() const {
   MutableByteBuffer buf;
+  buf.write_uint8(DATA);
   buf.write_unsigned_long(timestamp);
   buf.write_n_shorts(payload, payload_size);
   return asio::const_buffer(buf.data(), buf.size());

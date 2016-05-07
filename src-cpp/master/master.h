@@ -5,11 +5,12 @@
 #include <iostream>
 #include <fstream>
 #include "asio.hpp"
-#include "util/mpacket.h"
+#include "net/mpacket.h"
 #include "net/time_packet.h"
 #include <sndfile.hh>
 
 #define BUFFER_SIZE (1024)
+#define TP_BUFFER_SIZE (5 * 8)
 
 class Master
 {
@@ -31,7 +32,7 @@ class Master
     ~Master ();
 
   private:
-    void send();
+    void send_data();
     void send_packet(const MPacket& mp);
     void receive_timesync_reply();
     void send_timesync();
@@ -40,6 +41,7 @@ class Master
     asio::ip::udp::endpoint remote_endpt;
     asio::ip::udp::socket socket;
     SndfileHandle file;
+    uint8_t tp_buffer[TP_BUFFER_SIZE];
 };
 
 #endif

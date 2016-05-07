@@ -2,7 +2,8 @@
 
 #include "master/master.h"
 #include "util/syntime.h"
-#include "util/mpacket.h"
+#include "net/mpacket.h"
+#include "net/time_packet.h"
 
 #include <string>
 
@@ -10,9 +11,12 @@
 
 using namespace std;
 using namespace asio::ip;
-/*
+
 void Master::send_timesync() {
-  TPacket tp();
+  TPacket tp;
+  tp.from_sent = get_millisecond_time();
+
+  // send the packet to the client
   socket.async_send_to(
       asio::buffer(tp.pack()), remote_endpt,
       [this](error_code, size_t) {
@@ -22,15 +26,25 @@ void Master::send_timesync() {
 }
 
 void Master::receive_timesync_reply() {
-  uint64_t buffer[5];
   socket.async_receive_from(
-      asio::buffer(buffer, 5), remote_endpt,
+      asio::buffer(tp_buffer, TP_BUFFER_SIZE), remote_endpt,
       [this](error_code e, size_t bytes_recvd) {
         // calculate sum shit
+
+        // immediately grab the receipt time  
         mtime_t from_recv = get_millisecond_time();
-        TPacket * tp = TPacket::unpack(buffer);
-        mtime_t offset = (tp->to_recv - tp->from_send) - (tp->to_send - from_recv);
+        
+        // unpack the time packet
+        Packet * p = Packet::unpack(tp_buffer, bytes_recvd);
+        TPacket * tp = static_cast<TPacket *> (p);
+        tp->from_recvd = from_recv;
+        tp->tp_type = COMPLETE;
+
+        // calculate the offset
+        mtime_t offset = ((tp->to_recvd - tp->from_sent) - (tp->to_sent - tp->from_recvd))/2;
         tp->offset = offset;
+
+        // and send the reply
         socket.async_send_to(
             asio::buffer(tp->pack()), remote_endpt,
             [this](error_code, size_t) {
@@ -38,13 +52,15 @@ void Master::receive_timesync_reply() {
               // do we need timeouts on this shit
             }
         );
+        // ready to start sending data
+        send_data();
       }
   );
-}*/
+}
 
 static int sent = 0;
 
-void Master::send(){
+void Master::send_data(){
   sent++;
   int16_t *buf = new int16_t[BUFFER_SIZE] ;
 
@@ -62,13 +78,13 @@ void Master::send(){
     asio::buffer(mp.pack()), remote_endpt,
     [this](error_code /*ec*/, size_t /*bytes_sent*/)
     {
-      this->send();
+      this->send_data();
     });
 
 //  std::cout << sent << std::endl;
 }
 
 void Master::run(){
-  this->send();
+  this->send_timesync();
   io_service.run();
 }
