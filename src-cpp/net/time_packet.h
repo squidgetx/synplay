@@ -17,6 +17,8 @@ class TPacket : public Packet {
     asio::const_buffer pack() const;
     static TPacket* unpack(uint8_t* buf, std::size_t size);
 
+    void print();
+
     mtime_t from_sent;
     mtime_t to_recvd;
     mtime_t to_sent;
