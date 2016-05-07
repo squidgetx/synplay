@@ -41,7 +41,7 @@ void Master::receive_timesync_reply() {
         tp->tp_type = COMPLETE;
 
         // calculate the offset
-        mtime_t offset = ((tp->to_recvd - tp->from_sent) - (tp->to_sent - tp->from_recvd))/2;
+        mtime_offset_t offset = ((tp->to_recvd - tp->from_sent) + (tp->to_sent - tp->from_recvd))/2;
         tp->offset = offset;
 
         // and send the reply

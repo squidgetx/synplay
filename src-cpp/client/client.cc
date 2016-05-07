@@ -4,7 +4,7 @@
 #include "util/syntime.h"
 
 mtime_t Client::get_master_clock_millis() {
-  return get_millisecond_time() + offset;
+  return get_millisecond_time() - offset;
 }
 
 static int received = 0;
@@ -34,7 +34,6 @@ static int pacallback(const void *inputBuffer, void* outputBuffer,
   }
  // printf("\n");
 
-
   return paContinue;
 }
 
@@ -53,7 +52,7 @@ void Client::receive() {
     [this](std::error_code ec, std::size_t bytes_recvd)
     {        
     
-    // immediately grab the receipt time
+      // immediately grab the receipt time
       mtime_t to_recvd = get_millisecond_time();
       
       received++;
