@@ -17,6 +17,7 @@ asio::const_buffer TPacket::pack() const{
 	return asio::const_buffer(buf, NUM_TIMES);
 }
 
-TPacket* TPacket::unpack(mtime_t* buf){
-	return new TPacket(buf[0],buf[1],buf[2],buf[3],buf[4]);
+TPacket* TPacket::unpack(uint8_t* buf, std::size_t size){
+  mtime_t *arr = reinterpret_cast<mtime_t *> (buf);
+	return new TPacket(arr[0],arr[1],arr[2],arr[3],arr[4]);
 }

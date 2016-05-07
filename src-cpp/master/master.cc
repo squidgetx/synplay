@@ -35,7 +35,7 @@ void Master::receive_timesync_reply() {
       mtime_t from_recv = get_millisecond_time();
         
       // unpack the time packet
-        TPacket * tp = TPacket::unpack(tp_buffer);
+        TPacket * tp = TPacket::unpack(tp_buffer, bytes_recvd);
         tp->from_recvd = from_recv;
 
         // calculate the offset

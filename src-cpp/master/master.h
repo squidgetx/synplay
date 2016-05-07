@@ -10,7 +10,7 @@
 #include <sndfile.hh>
 
 #define BUFFER_SIZE (1024)
-#define TP_BUFFER_SIZE (5)
+#define TP_BUFFER_SIZE (5 * 8)
 
 class Master
 {
@@ -41,7 +41,7 @@ class Master
     asio::ip::udp::endpoint remote_endpt;
     asio::ip::udp::socket socket;
     SndfileHandle file;
-    mtime_t tp_buffer[TP_BUFFER_SIZE];
+    uint8_t tp_buffer[TP_BUFFER_SIZE];
 };
 
 #endif

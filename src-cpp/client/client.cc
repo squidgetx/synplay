@@ -44,53 +44,50 @@ void Client::receiveFromFile() {
 }
 
 void Client::receive() {
- receive_data();
-}
-
-void Client::receive_data() {
-//  std::cout << received << std::endl;
   socket.async_receive_from(
     asio::buffer(data, LEN), sender_endpoint,
     [this](std::error_code ec, std::size_t bytes_recvd)
-    {
+    {        
+    
+    // immediately grab the receipt time
+      mtime_t to_recvd = get_millisecond_time();
+      
       received++;
       if (!ec && bytes_recvd > 0)
-      {
-       // std::cout << bytes_recvd << std::endl;
-        MPacket * mpacket = MPacket::unpack(data, bytes_recvd);
-        //mpacket->print_all();
+      { 
+        Packet *packet = Packet::unpack(data,bytes_recvd);
+        switch (packet->get_type()){
+          case TIME:
+            receive_timesync(static_cast<TPacket *> (packet),to_recvd);
+            break;
+          case DATA:
+            receive_data(static_cast<MPacket *> (packet));
+            break;  
+        }
+        receive();
+      }     
+    }
+  );
+}
+
+void Client::receive_data(MPacket *mpacket) {
+//  std::cout << received << std::endl;
+
+       //mpacket->print_all();
         // For now just put everything in the play buffer
        // packet_buffer.put(mpacket);
         play_buffer.insert(play_buffer.end(), mpacket->get_payload(), mpacket->get_payload() + mpacket->get_payload_size());
-      }
-      receive();
-    });
 }
-void Client::receive_timesync() {
-  socket.async_receive_from(
-      asio::buffer(tp_buffer, TP_BUFFER_SIZE), sender_endpoint,
-      [this](std::error_code e, std::size_t bytes_recvd) {
-      
-        // immediately grab the receipt time
-        mtime_t to_recvd = get_millisecond_time();
 
-        // unpack the time packet
-        TPacket * tp = TPacket::unpack(tp_buffer);
-        tp->to_recvd = to_recvd;  
-
+void Client::receive_timesync(TPacket *tpacket, mtime_t to_recvd) {
         // and send the reply (after storing the to_sent time)
-        tp->to_sent = get_millisecond_time();
+        tpacket->to_sent = get_millisecond_time();
         socket.async_send_to(
-            asio::buffer(tp->pack()), sender_endpoint,
+            asio::buffer(tpacket->pack()), sender_endpoint,
             [this](std::error_code, std::size_t) {
               // reply sent
             }
         );
-
-        // and start receiving again
-        receive();
-      }
-    );
 }
 
 Client::Client(asio::io_service& io_service, uint16_t p) : port(p), packet_buffer(100),
