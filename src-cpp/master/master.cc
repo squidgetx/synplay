@@ -12,13 +12,34 @@
 using namespace std;
 using namespace asio::ip;
 
-void Master::send_timesync() {
+Master::Master(string filename,vector<udp::endpoint> remote_endpts) :
+  io_service()
+{
+
+  for (auto endp : remote_endpts) {
+    sockets.push_back(udp::socket(io_service, udp::endpoint(udp::v4(), 0)));
+  }
+
+  file = SndfileHandle (filename);
+
+  std::cerr << "Opened file '" << filename << "'" << std::endl;
+  std::cerr << "\tSample rate '" << file.samplerate() << "'" << std::endl;
+  std::cerr << "\tChannels '" << file.channels() << "'" << std::endl;
+}
+
+void Master::send_timesyncs() {
+  for (auto sock : sockets) {
+    send_timesync(sock);
+  }
+}
+
+void Master::send_timesync(udp::socket socket) {
   TPacket tp;
   tp.from_sent = get_millisecond_time();
 
   // send the packet to the client
   socket.async_send_to(
-      asio::buffer(tp.pack()), remote_endpt,
+      asio::buffer(tp.pack()), socket.remote_endpoint,
       [this](error_code, size_t) {
         this->receive_timesync_reply();
       }
@@ -27,7 +48,7 @@ void Master::send_timesync() {
 
 void Master::receive_timesync_reply() {
   socket.async_receive_from(
-      asio::buffer(tp_buffer, TP_BUFFER_SIZE), remote_endpt,
+      asio::buffer(tp_buffer, TP_BUFFER_SIZE), socket.remote_endpoint,
       [this](error_code e, size_t bytes_recvd) {
         // calculate sum shit
 
@@ -46,7 +67,7 @@ void Master::receive_timesync_reply() {
 
         // and send the reply
         socket.async_send_to(
-            asio::buffer(tp->pack()), remote_endpt,
+            asio::buffer(tp->pack()), socket.remote_endpoint,
             [this](error_code, size_t) {
               // reply sent...
               // do we need timeouts on this shit
@@ -75,7 +96,7 @@ void Master::send_data(){
  // std::cerr << "sending ";
  // mp.print_all();
   socket.async_send_to(
-    asio::buffer(mp.pack()), remote_endpt,
+    asio::buffer(mp.pack()), socket.remote_endpoint,
     [this](error_code /*ec*/, size_t /*bytes_sent*/)
     {
       this->send_data();
@@ -85,6 +106,6 @@ void Master::send_data(){
 }
 
 void Master::run(){
-  this->send_timesync();
+  this->send_timesyncs();
   io_service.run();
 }

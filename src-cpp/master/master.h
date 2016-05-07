@@ -15,18 +15,8 @@
 class Master
 {
   public:
-    Master(std::string &ip_addr, uint16_t port, std::string filename) :
-      io_service(),
-      remote_endpt(asio::ip::address::from_string(ip_addr),port),
-      socket(io_service, asio::ip::udp::endpoint(asio::ip::udp::v4(), 0)){
+    Master(std::string filename,std::vector<asio::ip::udp::endpoint> remote_endpts);
 
-          file = SndfileHandle (filename);
-
-          std::cerr << "Opened file '" << filename << "'" << std::endl;
-          std::cerr << "\tSample rate '" << file.samplerate() << "'" << std::endl;
-          std::cerr << "\tChannels '" << file.channels() << "'" << std::endl;
-      }
-    
     void run();
 
     ~Master ();
@@ -35,11 +25,11 @@ class Master
     void send_data();
     void send_packet(const MPacket& mp);
     void receive_timesync_reply();
-    void send_timesync();
+    void send_timesync(asio::ip::udp::socket sock);
+    void send_timesyncs();
 
     asio::io_service io_service;
-    asio::ip::udp::endpoint remote_endpt;
-    asio::ip::udp::socket socket;
+    std::vector<asio::ip::udp::socket> sockets;
     SndfileHandle file;
     uint8_t tp_buffer[TP_BUFFER_SIZE];
 };
