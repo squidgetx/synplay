@@ -6,6 +6,7 @@ TPacket::TPacket(TPacketType ptt, mtime_t f_sent_, mtime_t t_recvd_, mtime_t t_s
 
 asio::const_buffer TPacket::pack() const{
   MutableByteBuffer buf;
+  buf.write_uint8(TIME);
   buf.write_uint8(tp_type);
   buf.write_unsigned_long(from_sent);
   buf.write_unsigned_long(to_recvd);

@@ -83,7 +83,7 @@ void Client::receive_timesync(TPacket *tpacket, mtime_t to_recvd) {
         tpacket->to_recvd = to_recvd;
         tpacket->to_sent = get_millisecond_time();
 
-        if (tpacket->offset != 0) {
+        if (tpacket->tp_type == COMPLETE) {
           offset = tpacket->offset;
           std::cerr << "setting offset: " << offset << std::endl;
         }

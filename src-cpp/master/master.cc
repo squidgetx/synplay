@@ -38,6 +38,7 @@ void Master::receive_timesync_reply() {
         Packet * p = Packet::unpack(tp_buffer, bytes_recvd);
         TPacket * tp = static_cast<TPacket *> (p);
         tp->from_recvd = from_recv;
+        tp->tp_type = COMPLETE;
 
         // calculate the offset
         mtime_t offset = ((tp->to_recvd - tp->from_sent) - (tp->to_sent - tp->from_recvd))/2;
