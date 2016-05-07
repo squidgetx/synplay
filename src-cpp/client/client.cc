@@ -114,7 +114,7 @@ void Client::receive_timesync(TPacket *tpacket, mtime_t to_recvd) {
 }
 
 Client::Client(asio::io_service& io_service, uint16_t p) : port(p), packet_buffer(100),
-  socket(io_service, udp::endpoint(udp::v4(), p)), offset(0) {
+  socket(io_service, udp::endpoint(udp::v4(), p)) {
   file = SndfileHandle("../yellow.wav");
   std::cout << file.samplerate() << " " << file.channels() << std::endl;
   std::cout << "Listening on " << port << std::endl;
