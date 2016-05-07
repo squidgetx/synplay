@@ -18,6 +18,7 @@ class MutableByteBuffer : public ByteBuffer {
 
     void write_uint8(uint8_t val);
     void write_unsigned_long(uint64_t val);
+    void write_signed_long(int64_t val); 
     void write_short(int16_t val);
     void write_n_shorts(const int16_t *vals, std::size_t n);
     virtual std::size_t size() const;

@@ -26,6 +26,10 @@ void MutableByteBuffer::write_unsigned_long(uint64_t val) {
   write(reinterpret_cast<uint8_t *>(&val), sizeof(val));
 }
 
+void MutableByteBuffer::write_signed_long(int64_t val) {
+  write(reinterpret_cast<uint8_t *>(&val), sizeof(val));
+}
+
 void MutableByteBuffer::write_short(int16_t val) {
   write(reinterpret_cast<uint8_t *>(&val), sizeof(val));
 }

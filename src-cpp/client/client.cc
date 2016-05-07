@@ -85,6 +85,7 @@ void Client::receive_timesync(TPacket *tpacket, mtime_t to_recvd) {
 
         if (tpacket->offset != 0) {
           offset = tpacket->offset;
+          std::cerr << "setting offset: " << offset << std::endl;
         }
 
         // and send the reply

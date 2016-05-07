@@ -1,6 +1,6 @@
 #include "time_packet.h"
 
-TPacket::TPacket(mtime_t f_sent_, mtime_t t_recvd_, mtime_t t_sent_, mtime_t f_recvd_, mtime_t offset_) : from_sent(f_sent_), to_recvd(t_recvd_), to_sent(t_sent_), from_recvd(f_recvd_), offset(offset_), Packet::Packet(TIME) {
+TPacket::TPacket(mtime_t f_sent_, mtime_t t_recvd_, mtime_t t_sent_, mtime_t f_recvd_, mtime_offset_t offset_) : from_sent(f_sent_), to_recvd(t_recvd_), to_sent(t_sent_), from_recvd(f_recvd_), offset(offset_), Packet::Packet(TIME) {
 
 }
 
@@ -12,7 +12,7 @@ asio::const_buffer TPacket::pack() const{
   buf.write_unsigned_long(to_recvd);
   buf.write_unsigned_long(to_sent);
   buf.write_unsigned_long(from_recvd);
-  buf.write_unsigned_long(offset);
+  buf.write_signed_long(offset);
 
   return asio::const_buffer(buf.data(), buf.size());
 }
