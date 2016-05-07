@@ -9,7 +9,7 @@
 #include <portaudio.h>
 #include <sndfile.hh>
 #include "util/ringbuf.h"
-#include "util/mpacket.h"
+#include "net/mpacket.h"
 #include "net/time_packet.h"
 #include "net/packet.h"
 
@@ -43,7 +43,7 @@ class Client {
     int16_t file_buf[BUFFER_LENGTH];
     SndfileHandle file;
 
-    mtime_t offset;
+    mtime_offset_t offset;
 };
 
 #endif

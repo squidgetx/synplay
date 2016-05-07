@@ -2,7 +2,7 @@
 
 #include "master/master.h"
 #include "util/syntime.h"
-#include "util/mpacket.h"
+#include "net/mpacket.h"
 #include "net/time_packet.h"
 
 #include <string>

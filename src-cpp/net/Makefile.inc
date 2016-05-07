@@ -2,7 +2,7 @@
 DIR=net
 
 # Change these
-NET_SOURCES := $(patsubst %, $(DIR)/%, packet.cc time_packet.cc)
+NET_SOURCES := $(patsubst %, $(DIR)/%, packet.cc mpacket.cc time_packet.cc)
 NET_OBJECTS := $(patsubst %.cc, %.o, $(NET_SOURCES))
 
 SOURCES += $(NET_SOURCES)
