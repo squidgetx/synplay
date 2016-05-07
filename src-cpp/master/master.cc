@@ -2,7 +2,6 @@
 
 #include "master/master.h"
 #include "master/msocket.h"
-#include "util/syntime.h"
 #include "net/mpacket.h"
 #include "net/time_packet.h"
 
@@ -13,17 +12,24 @@
 using namespace std;
 using namespace asio::ip;
 
-Master::Master(string filename,vector<udp::endpoint> r_endpts) :
+Master::Master(string& filename,vector<udp::endpoint>& r_endpts) :
   remote_endpts(r_endpts)
 {
+  msockets.reserve(r_endpts.size());
   for (auto endpt : remote_endpts) {
-    msockets.push_back(MSocket(io_service,endpt,filename));
+    msockets.push_back(new MSocket(io_service,endpt,filename));
+  }
+}
+
+Master::~Master(){
+  for (MSocket *sock : msockets) {
+    delete sock;
   }
 }
 
 void Master::run(){
-  for (auto sock : msockets) {
-    sock.start();
+  for (MSocket *sock : msockets) {
+    sock->start();
   }
   io_service.run();
 }

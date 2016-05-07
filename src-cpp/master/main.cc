@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
   string filename = argv[1];
   vector<udp::endpoint> remote_endpts;
 
-  for (i = 2; i < argc; i += 2) {
+  for (int i = 2; i < argc; i += 2) {
     string ip_addr = argv[i];
     uint16_t port = atoi(argv[i+1]);
     remote_endpts.push_back(udp::endpoint(address::from_string(ip_addr),port));

@@ -13,13 +13,16 @@ using namespace std;
 using namespace asio::ip;
 
 MSocket::MSocket(asio::io_service& io_s, asio::ip::udp::endpoint& r_endpt, std::string& fname) :
-  io_service(io_s), remote_endpt(r_endpt), socket(io_s,udp::endpoint(udp::v4(),0))
+  remote_endpt(r_endpt), socket(io_s,udp::endpoint(udp::v4(),0))
 {
   file = SndfileHandle (fname);
 
-  std::cerr << "Opened file '" << filename << "'" << std::endl;
+  std::cerr << "Opened file '" << fname << "'" << std::endl;
   std::cerr << "\tSample rate '" << file.samplerate() << "'" << std::endl;
   std::cerr << "\tChannels '" << file.channels() << "'" << std::endl;
+}
+
+MSocket::~MSocket(){
 }
 
 void MSocket::send_timesync() {

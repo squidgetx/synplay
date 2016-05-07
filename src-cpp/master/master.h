@@ -16,16 +16,15 @@
 class Master
 {
   public:
-    Master(std::string filename,std::vector<asio::ip::udp::endpoint> remote_endpts);
+    Master(std::string& filename,std::vector<asio::ip::udp::endpoint>& remote_endpts);
+    ~Master ();
 
     void run();
-
-    ~Master ();
 
   private:
     asio::io_service io_service;
     std::vector<asio::ip::udp::endpoint> remote_endpts;
-    std::vector<MSocket> msockets;
+    std::vector<MSocket *> msockets;
 };
 
 #endif

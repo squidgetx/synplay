@@ -27,7 +27,6 @@ class MSocket
     void send_timesync();
     void receive_timesync_reply();
 
-    asio::io_service io_service;
     asio::ip::udp::endpoint remote_endpt;
     asio::ip::udp::socket socket;
     SndfileHandle file;
