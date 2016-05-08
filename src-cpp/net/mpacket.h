@@ -9,6 +9,9 @@
 #include "util/bytebuffer.h"
 #include "net/packet.h"
 
+// for the mtime_t data type
+#include "net/time_packet.h"
+
 class MPacket : public Packet {
   public:
     MPacket(mtime_t time, int16_t* p, size_t psize);
