@@ -10,7 +10,7 @@
 #include <sndfile.hh>
 
 #define BUFFER_SIZE (1024)
-#define TP_BUFFER_SIZE (5 * 8)
+#define TP_BUFFER_SIZE (2 + 5 * 8)
 
 class Master
 {
