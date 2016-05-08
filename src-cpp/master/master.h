@@ -27,6 +27,7 @@ class Master
     SndfileHandle file;
     uint8_t tp_buffer[TP_BUFFER_SIZE];
     int16_t data_buffer[BUFFER_SIZE];
+    uint16_t synced;
 
     void send_data(asio::ip::udp::endpoint& remote_endpt, asio::const_buffer& buf);
     void send_data();

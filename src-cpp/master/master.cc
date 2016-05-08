@@ -13,7 +13,7 @@ using namespace std;
 using namespace asio::ip;
 
 Master::Master(string& fname,vector<udp::endpoint>& r_endpts) :
-  remote_endpts(r_endpts), io_service(), socket(io_service,udp::endpoint(udp::v4(),0))
+  remote_endpts(r_endpts), io_service(), socket(io_service,udp::endpoint(udp::v4(),0)), synced(0)
 {
   file = SndfileHandle (fname);
 
@@ -69,8 +69,11 @@ void Master::receive_timesync_reply(udp::endpoint& remote_endpt) {
               // do we need timeouts on this shit
             }
         );
+        ;
         // ready to start sending data
-        this->send_data();
+        if ((this->synced += 1) == remote_endpts.size()){
+            this->send_data();
+        }
       }
   );
 }
