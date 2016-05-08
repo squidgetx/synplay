@@ -11,12 +11,12 @@ using namespace asio::ip;
 
 int main(int argc, char *argv[])
 {
-  
+
   if (argc < 4 || argc % 2 != 0){
     cerr << USAGE << endl;
     return 1;
   }
- 
+
   string filename = argv[1];
   vector<udp::endpoint> remote_endpts;
 
