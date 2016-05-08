@@ -8,7 +8,6 @@
 #include "net/mpacket.h"
 #include "net/time_packet.h"
 #include <sndfile.hh>
-#include "master/msocket.h"
 
 #define BUFFER_SIZE (1024)
 #define TP_BUFFER_SIZE (5 * 8)
@@ -24,7 +23,16 @@ class Master
   private:
     asio::io_service io_service;
     std::vector<asio::ip::udp::endpoint> remote_endpts;
-    std::vector<MSocket *> msockets;
+    asio::ip::udp::socket socket;
+    SndfileHandle file;
+    uint8_t tp_buffer[TP_BUFFER_SIZE];
+    
+    void send_data(asio::ip::udp::endpoint& remote_endpt);
+    void send_data();
+
+    void send_timesync(asio::ip::udp::endpoint& remote_endpt);
+    void send_timesync();
+    void receive_timesync_reply(asio::ip::udp::endpoint remote_endpt);
 };
 
 #endif
