@@ -1,11 +1,11 @@
 #include "asio.hpp"
 
 #include "master/master.h"
-#include "util/syntime.h"
-#include "util/assert.h"
+#include "net/packet.h"
 #include "net/mpacket.h"
 #include "net/time_packet.h"
-#include "net/packet.h"
+#include "util/syntime.h"
+#include "util/assert.h"
 
 #include <string>
 
@@ -14,26 +14,43 @@
 using namespace std;
 using namespace asio::ip;
 
-void Master::send_timesync() {
+Master::Master(string& fname,vector<udp::endpoint>& r_endpts) :
+  remote_endpts(r_endpts), io_service(), socket(io_service,udp::endpoint(udp::v4(),0)), synced(0)
+{
+  file = SndfileHandle (fname);
+
+  std::cerr << "Opened file '" << fname << "'" << std::endl;
+  std::cerr << "\tSample rate '" << file.samplerate() << "'" << std::endl;
+  std::cerr << "\tChannels '" << file.channels() << "'" << std::endl;
+}
+
+Master::~Master(){
+}
+
+void Master::send_timesync(udp::endpoint& remote_endpt) {
   TPacket tp;
   tp.from_sent = get_millisecond_time();
 
-  // send the packet to the client
-  socket.async_send_to(
-      asio::buffer(tp.pack()), remote_endpt,
-      [this](error_code, size_t) {
-        this->receive_timesync_reply();
-      }
-  );
+  socket.async_send_to(asio::buffer(tp.pack()),remote_endpt,
+      [this,&remote_endpt](error_code,size_t) {
+          this->receive_timesync_reply(remote_endpt);
+      });
 }
 
-void Master::receive_timesync_reply() {
+// send a timesync to every remote endpoint.
+void Master::send_timesync(){
+  for (udp::endpoint& remote_endpt : remote_endpts) {
+    send_timesync(remote_endpt);
+  }
+}
+
+void Master::receive_timesync_reply(udp::endpoint& remote_endpt) {
   socket.async_receive_from(
-      asio::buffer(tp_buffer, TP_BUFFER_SIZE), remote_endpt,
-      [this](error_code e, size_t bytes_recvd) {
+      asio::buffer(this->tp_buffer, TP_BUFFER_SIZE), remote_endpt,
+      [this,&remote_endpt](error_code e, size_t bytes_recvd){
         // calculate sum shit
 
-        // immediately grab the receipt time  
+        // immediately grab the receipt time
         mtime_t from_recv = get_millisecond_time();
         // unpack the time packet
         Packet * p = Packet::unpack(tp_buffer, bytes_recvd);
@@ -54,39 +71,46 @@ void Master::receive_timesync_reply() {
               // do we need timeouts on this shit
             }
         );
+        ;
         // ready to start sending data
-        send_data();
+        if ((this->synced += 1) == remote_endpts.size()){
+            this->send_data();
+        }
       }
   );
 }
 
-static int sent = 0;
+void Master::send_data(udp::endpoint& remote_endpt, asio::const_buffer& buf){
+
+  socket.async_send_to(asio::buffer(buf),remote_endpt,
+    [this](error_code /*ec*/, size_t /*bytes_sent*/){
+      // QUESTION: this sends more to everyone in the callback for
+      // one successful sent packet... what to do instead?
+      this->send_data();
+    });
+//  std::cout << sent << std::endl;
+}
 
 void Master::send_data(){
-  sent++;
-  int16_t *buf = new int16_t[BUFFER_SIZE] ;
-
-  sf_count_t num_read = file.read (buf, BUFFER_SIZE) ;
+  sf_count_t num_read = file.read (data_buffer, BUFFER_SIZE) ;
 
   if (!num_read){
     return;
   }
 
   time_t now = get_millisecond_time();
-  MPacket mp(now + 1000, buf,num_read);
+  MPacket mp(now + 1000, data_buffer,num_read);
  // std::cerr << "sending ";
  // mp.print_all();
-  socket.async_send_to(
-    asio::buffer(mp.pack()), remote_endpt,
-    [this](error_code /*ec*/, size_t /*bytes_sent*/)
-    {
-      this->send_data();
-    });
 
-//  std::cout << sent << std::endl;
+  asio::const_buffer mp_buf = mp.pack();
+
+  for (udp::endpoint& remote_endpt : remote_endpts) {
+    send_data(remote_endpt,mp_buf);
+  }
 }
 
 void Master::run(){
-  this->send_timesync();
+  send_timesync();
   io_service.run();
 }

@@ -10,38 +10,31 @@
 #include <sndfile.hh>
 
 #define BUFFER_SIZE (1024)
-#define TP_BUFFER_SIZE (5 * 8)
+#define TP_BUFFER_SIZE (2 + 5 * 8)
 
 class Master
 {
   public:
-    Master(std::string &ip_addr, uint16_t port, std::string filename) :
-      io_service(),
-      remote_endpt(asio::ip::address::from_string(ip_addr),port),
-      socket(io_service, asio::ip::udp::endpoint(asio::ip::udp::v4(), 0)){
-
-          file = SndfileHandle (filename);
-
-          std::cerr << "Opened file '" << filename << "'" << std::endl;
-          std::cerr << "\tSample rate '" << file.samplerate() << "'" << std::endl;
-          std::cerr << "\tChannels '" << file.channels() << "'" << std::endl;
-      }
-    
-    void run();
-
+    Master(std::string& filename,std::vector<asio::ip::udp::endpoint>& remote_endpts);
     ~Master ();
 
-  private:
-    void send_data();
-    void send_packet(const MPacket& mp);
-    void receive_timesync_reply();
-    void send_timesync();
+    void run();
 
+  private:
     asio::io_service io_service;
-    asio::ip::udp::endpoint remote_endpt;
+    std::vector<asio::ip::udp::endpoint> remote_endpts;
     asio::ip::udp::socket socket;
     SndfileHandle file;
     uint8_t tp_buffer[TP_BUFFER_SIZE];
+    int16_t data_buffer[BUFFER_SIZE];
+    uint16_t synced;
+
+    void send_data(asio::ip::udp::endpoint& remote_endpt, asio::const_buffer& buf);
+    void send_data();
+
+    void send_timesync(asio::ip::udp::endpoint& remote_endpt);
+    void send_timesync();
+    void receive_timesync_reply(asio::ip::udp::endpoint& remote_endpt);
 };
 
 #endif

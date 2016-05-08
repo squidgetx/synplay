@@ -57,6 +57,7 @@ uint8_t* MutableByteBuffer::data() {
 void MutableByteBuffer::increase_size() {
   uint8_t *ndata = new uint8_t[size_ * 2];
   std::memcpy(ndata, data_, size_);
+  delete data_;
   data_ = ndata;
   size_ *= 2;
 }
