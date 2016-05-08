@@ -25,16 +25,11 @@ Master::Master(string& fname,vector<udp::endpoint>& r_endpts) :
 Master::~Master(){
 }
 
-template <typename WriteHandler> 
-      void Master::async_send_to(asio::ip::udp::endpoint& remote_endpt, Packet& pack, WriteHandler wh){
-  socket.async_send_to(asio::buffer(pack.pack()), remote_endpt, wh);
-}
-    
 void Master::send_timesync(udp::endpoint& remote_endpt) {
   TPacket tp;
   tp.from_sent = get_millisecond_time();
 
-  async_send_to(remote_endpt,tp,[this,&remote_endpt](error_code,size_t) {
+  socket.async_send_to(asio::buffer(tp.pack()),remote_endpt,[this,&remote_endpt](error_code,size_t) {
       this->receive_timesync_reply(remote_endpt);
       });
 }
@@ -48,7 +43,7 @@ void Master::send_timesync(){
 
 void Master::receive_timesync_reply(udp::endpoint remote_endpt) {
   socket.async_receive_from(
-      asio::buffer(tp_buffer, TP_BUFFER_SIZE), remote_endpt,
+      asio::buffer(this->tp_buffer, TP_BUFFER_SIZE), remote_endpt,
       [this,&remote_endpt](error_code e, size_t bytes_recvd) {
         // calculate sum shit
 
@@ -56,7 +51,7 @@ void Master::receive_timesync_reply(udp::endpoint remote_endpt) {
         mtime_t from_recv = get_millisecond_time();
         
         // unpack the time packet
-        Packet * p = Packet::unpack(tp_buffer, bytes_recvd);
+        Packet * p = Packet::unpack(this->tp_buffer, bytes_recvd);
         TPacket * tp = static_cast<TPacket *> (p);
         tp->from_recvd = from_recv;
         tp->tp_type = COMPLETE;
@@ -74,16 +69,14 @@ void Master::receive_timesync_reply(udp::endpoint remote_endpt) {
             }
         );
         // ready to start sending data
-        send_data();
+        this->send_data();
       }
   );
 }
 
-static int sent = 0;
+void Master::send_data(udp::endpoint& remote_endpt, asio::const_buffer& buf){
 
-void Master::send_data(udp::endpoint& remote_endpt, MPacket &mp){
-
-  async_send_to(remote_endpt,mp,
+  socket.async_send_to(asio::buffer(buf),remote_endpt,
     [this](error_code /*ec*/, size_t /*bytes_sent*/){
       // QUESTION: this sends more to everyone in the callback for
       // one successful sent packet... what to do instead?
@@ -93,7 +86,6 @@ void Master::send_data(udp::endpoint& remote_endpt, MPacket &mp){
 }
 
 void Master::send_data(){
-  sent++;
   int16_t *buf = new int16_t[BUFFER_SIZE] ;
 
   sf_count_t num_read = file.read (buf, BUFFER_SIZE) ;
@@ -107,8 +99,10 @@ void Master::send_data(){
  // std::cerr << "sending ";
  // mp.print_all();
 
+  asio::const_buffer mp_buf = mp.pack();
+
   for (udp::endpoint& remote_endpt : remote_endpts) {
-    send_data(remote_endpt,mp);
+    send_data(remote_endpt,mp_buf);
   }
 }
 

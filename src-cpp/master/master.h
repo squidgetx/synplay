@@ -27,10 +27,7 @@ class Master
     SndfileHandle file;
     uint8_t tp_buffer[TP_BUFFER_SIZE];
 
-    template <typename WriteHandler> 
-      void async_send_to(asio::ip::udp::endpoint& remote_endpt, Packet& pack, WriteHandler wh);
-    
-    void send_data(asio::ip::udp::endpoint& remote_endpt, MPacket &mp);
+    void send_data(asio::ip::udp::endpoint& remote_endpt, asio::const_buffer& buf);
     void send_data();
 
     void send_timesync(asio::ip::udp::endpoint& remote_endpt);
