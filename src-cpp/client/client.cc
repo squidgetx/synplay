@@ -3,6 +3,7 @@
 #include "net/time_packet.h"
 #include "util/syntime.h"
 
+static int received = 0;
 
 mtime_t Client::get_master_clock_millis() {
   return get_millisecond_time() - offset;
@@ -81,6 +82,8 @@ void Client::receive() {
 }
 
 void Client::receive_data(MPacket *mpacket) {
+        received++;
+        printf("%d\r", received);
         //mpacket->print();
         s_state->play_buffer->insert(s_state->play_buffer->end(), mpacket->get_payload(), mpacket->get_payload() + mpacket->get_payload_size());
 
