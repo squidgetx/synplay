@@ -15,36 +15,35 @@ static int pacallback(const void *inputBuffer, void* outputBuffer,
 
   streamState * s_state = (streamState *) userData;
 
-  if (s_state->state == STOPPED) {
-    PaTime play_time = timeInfo->outputBufferDacTime;
-    //std::cerr << "Current time: " << timeInfo->currentTime << " Start t: " << s_state->start_t << std::endl;
-    if (s_state->start_t == 0 || s_state->start_t >= play_time) {
-      for(unsigned long i = 0; i < framesPerBuffer; i++) {
-          *(audio_out++) = 0;
-          *(audio_out++) = 0;
-      }
-      return paContinue;
-    }
-    s_state->state = STARTED;
-  }
+  std::deque<MPacket *> * packet_buffer = s_state->packet_buffer;
 
-  std::deque<int16_t> * play_buffer = s_state->play_buffer;
-  // copy as much from the byte buffer to the
-  // audio outputBuffer
+  PaTime play_time = timeInfo->outputBufferDacTime;
+
   for(unsigned long i = 0; i < framesPerBuffer; i++) {
-    if (play_buffer->size() < 2) {
+
+    if (packet_buffer->empty()) {
       *(audio_out++) = 0;
       *(audio_out++) = 0;
       continue;
     }
-    *(audio_out++) = play_buffer->front();
-   // printf("%i ", play_buffer->front());
-    play_buffer->pop_front();
-    *(audio_out++) = play_buffer->front();
-   // printf("%i ", play_buffer->front());
-    play_buffer->pop_front();
+
+    MPacket * mp = packet_buffer->front();
+    
+    if (mp->get_pa_timestamp() >= play_time) {
+      *(audio_out++) = 0;
+      *(audio_out++) = 0;
+      continue;
+    }
+    if (mp->remaining() < 2) {
+      packet_buffer->pop_front();
+      i--;
+      continue;
+    }
+
+    *(audio_out++) = mp->get_int16_t();
+    *(audio_out++) = mp->get_int16_t();
+
   }
- // printf("\n");
 
   return paContinue;
 }
@@ -85,10 +84,11 @@ void Client::receive() {
 
 void Client::receive_data(MPacket *mpacket) {
         received++;
-        printf("%d\r", received);
+        //printf("%d\r", received);
         //s_state->play_buffer->insert(s_state->play_buffer->end(), mpacket->get_payload(), mpacket->get_payload() + mpacket->get_payload_size());
         mpacket->set_pa_timestamp(get_pa_time(mpacket->get_timestamp()));
         s_state->packet_buffer->push_back(mpacket);
+      //  mpacket->print();
 
         /*
         if (s_state->start_t == 0) {
@@ -124,7 +124,6 @@ void Client::receive_timesync(TPacket *tpacket, mtime_t to_recvd) {
 }
 
 Client::Client(asio::io_service& io_service, uint16_t p) : port(p), 
-  packet_buffer(100),
   socket(io_service, udp::endpoint(udp::v4(), p)) {
   std::cout << "Listening on " << port << std::endl;
   s_state = new streamState(100);

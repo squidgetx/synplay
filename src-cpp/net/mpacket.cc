@@ -6,6 +6,7 @@ MPacket::MPacket(mtime_t time, int16_t* p, size_t ps) : timestamp(time),
   payload(p), payload_size(ps), Packet::Packet(PacketType::DATA) {
 
     pa_timestamp = 0;
+    play_head = 0;
     
 }
 
@@ -58,7 +59,7 @@ MPacket * MPacket::unpack(uint8_t* p, std::size_t size) {
 }
 
 void MPacket::print() {
-  std::cout << "<MPacket timestamp: " << timestamp << " payload size: " << payload_size << ">" << std::endl;
+  std::cout << "<MPacket timestamp: " << timestamp << " payload size: " << payload_size << " PaTime: " << pa_timestamp << ">" << std::endl;
 }
 
 void MPacket::print_all() {
