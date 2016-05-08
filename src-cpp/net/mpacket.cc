@@ -2,7 +2,7 @@
 
 #include "util/mutable_byte_buffer.h"
 
-MPacket::MPacket(time_t time, int16_t* p, size_t ps) : timestamp(time), payload(p), payload_size(ps), Packet::Packet(PacketType::DATA) {
+MPacket::MPacket(mtime_t time, int16_t* p, size_t ps) : timestamp(time), payload(p), payload_size(ps), Packet::Packet(PacketType::DATA) {
 
 }
 
@@ -14,7 +14,7 @@ int16_t* MPacket::get_payload() {
   return payload;
 }
 
-time_t MPacket::get_timestamp() {
+mtime_t MPacket::get_timestamp() {
   return timestamp;
 }
 
@@ -28,7 +28,7 @@ asio::const_buffer MPacket::pack() const {
 
 MPacket * MPacket::unpack(uint8_t* p, std::size_t size) {
   ByteBuffer buf(p, size);
-  uint64_t timestamp = 0;
+  mtime_t timestamp = 0;
   int16_t * payload = new int16_t[PACKET_SIZE];
   buf.get_unsigned_long(&timestamp);
   size_t payload_size = buf.remaining() / sizeof(int16_t);

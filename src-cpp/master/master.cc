@@ -101,7 +101,7 @@ void Master::send_data(){
     return;
   }
 
-  time_t now = get_millisecond_time();
+  mtime_t now = get_millisecond_time();
   MPacket mp(now + 1000, data_buffer,num_read);
  // std::cerr << "sending ";
  // mp.print_all();

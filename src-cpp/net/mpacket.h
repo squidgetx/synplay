@@ -11,10 +11,10 @@
 
 class MPacket : public Packet {
   public:
-    MPacket(time_t time, int16_t* p, size_t psize);
+    MPacket(mtime_t time, int16_t* p, size_t psize);
     int16_t* get_payload();
     size_t get_payload_size();
-    time_t get_timestamp();
+    mtime_t get_timestamp();
     void print();
     void print_all();
     asio::const_buffer pack() const;
@@ -23,7 +23,7 @@ class MPacket : public Packet {
   private:
     int16_t* payload;
     size_t payload_size;
-    time_t timestamp;
+    mtime_t timestamp;
 };
 
 
