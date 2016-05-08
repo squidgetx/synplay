@@ -82,10 +82,12 @@ void Master::receive_timesync_reply(udp::endpoint& remote_endpt) {
 
 void Master::send_data(udp::endpoint& remote_endpt, asio::const_buffer& buf){
   socket.async_send_to(asio::buffer(buf),remote_endpt,
-    [this](error_code /*ec*/, size_t /*bytes_sent*/){
+    [this](error_code ec, size_t /*bytes_sent*/){
       // QUESTION: this sends more to everyone in the callback for
       // one successful sent packet... what to do instead?
-        if (--this->outstanding_packets == 0) {
+        if (ec){
+            cerr << ec.message() << endl;
+        } else if (--this->outstanding_packets == 0) {
             this->send_data();
         }
     });
