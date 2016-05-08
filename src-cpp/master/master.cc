@@ -60,7 +60,7 @@ void Master::receive_timesync_reply(udp::endpoint& remote_endpt) {
         tp->tp_type = COMPLETE;
 
         // calculate the offset
-        mtime_offset_t offset = ((tp->to_recvd - tp->from_sent) + (tp->to_sent - tp->from_recvd))/2;
+        mtime_offset_t offset = ((static_cast<mtime_offset_t> (tp->to_recvd) - static_cast<mtime_offset_t> (tp->from_sent)) + (static_cast<mtime_offset_t> (tp->to_sent) - static_cast<mtime_offset_t> (tp->from_recvd)))/2;
         tp->offset = offset;
 
         // and send the reply
