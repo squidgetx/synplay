@@ -30,7 +30,7 @@ void Master::send_timesync(udp::endpoint& remote_endpt) {
   tp.from_sent = get_millisecond_time();
 
   socket.async_send_to(asio::buffer(tp.pack()),remote_endpt,
-      [this,remote_endpt](error_code,size_t) {
+      [this,remote_endpt](error_code,size_t) mutable {
           this->receive_timesync_reply(remote_endpt);
       });
 }
@@ -42,10 +42,10 @@ void Master::send_timesync(){
   }
 }
 
-void Master::receive_timesync_reply(udp::endpoint remote_endpt) {
+void Master::receive_timesync_reply(udp::endpoint& remote_endpt) {
   socket.async_receive_from(
       asio::buffer(this->tp_buffer, TP_BUFFER_SIZE), remote_endpt,
-      [this,remote_endpt](error_code e, size_t bytes_recvd) {
+      [this,remote_endpt](error_code e, size_t bytes_recvd) mutable {
         // calculate sum shit
 
         // immediately grab the receipt time

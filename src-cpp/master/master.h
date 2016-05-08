@@ -33,7 +33,7 @@ class Master
 
     void send_timesync(asio::ip::udp::endpoint& remote_endpt);
     void send_timesync();
-    void receive_timesync_reply(asio::ip::udp::endpoint remote_endpt);
+    void receive_timesync_reply(asio::ip::udp::endpoint& remote_endpt);
 };
 
 #endif
