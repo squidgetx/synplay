@@ -15,7 +15,7 @@ using namespace std;
 using namespace asio::ip;
 
 Master::Master(string& fname,vector<udp::endpoint>& r_endpts) :
-  remote_endpts(r_endpts), io_service(), socket(io_service,udp::endpoint(udp::v4(),0)), synced(0), outstanding_packets(0)
+  remote_endpts(r_endpts), io_service(), socket(io_service,udp::endpoint(udp::v4(),0)), synced(0), outstanding_packets(0), packet_count(remote_endpts.size(), 0)
 {
   file = SndfileHandle (fname);
 
@@ -71,7 +71,7 @@ void Master::receive_timesync_reply(udp::endpoint& remote_endpt) {
               // do we need timeouts on this shit
             }
         );
-        ;
+
         // ready to start sending data
         if ((this->synced += 1) == remote_endpts.size()){
             this->send_data();
@@ -80,14 +80,15 @@ void Master::receive_timesync_reply(udp::endpoint& remote_endpt) {
   );
 }
 
-void Master::send_data(udp::endpoint& remote_endpt, asio::const_buffer& buf){
+void Master::send_data(udp::endpoint& remote_endpt, asio::const_buffer& buf, /* debug packet counts */ uint64_t &sent){
   socket.async_send_to(asio::buffer(buf),remote_endpt,
-    [this](error_code ec, size_t /*bytes_sent*/){
+    [this,&sent](error_code ec, size_t /*bytes_sent*/){
       // QUESTION: this sends more to everyone in the callback for
       // one successful sent packet... what to do instead?
         if (ec){
             cerr << ec.message() << endl;
         } else if (--this->outstanding_packets == 0) {
+            sent++;
             this->send_data();
         }
     });
@@ -110,12 +111,18 @@ void Master::send_data(){
 
   asio::const_buffer mp_buf = mp.pack();
 
-  for (udp::endpoint& remote_endpt : remote_endpts) {
-    send_data(remote_endpt,mp_buf);
+  for (auto&& it = remote_endpts.begin(); it < remote_endpts.end(); it++) {
+    send_data(*it, mp_buf, packet_count[std::distance(remote_endpts.begin(), it)]);
   }
 }
 
 void Master::run(){
   send_timesync();
   io_service.run();
+
+  std::cerr << "Packet counts" << std::endl;
+  for (auto&& it = remote_endpts.begin(); it < remote_endpts.end(); it++) {
+    std::cerr << *it << " " <<
+      packet_count[std::distance(remote_endpts.begin(), it)] << std::endl;
+  }
 }
