@@ -13,7 +13,7 @@ using namespace std;
 using namespace asio::ip;
 
 Master::Master(string& fname,vector<udp::endpoint>& r_endpts) :
-  remote_endpts(r_endpts), io_service(), socket(io_service,udp::endpoint(udp::v4(),0)) 
+  remote_endpts(r_endpts), io_service(), socket(io_service,udp::endpoint(udp::v4(),0))
 {
   file = SndfileHandle (fname);
 
@@ -48,9 +48,9 @@ void Master::receive_timesync_reply(udp::endpoint remote_endpt) {
       [this,remote_endpt](error_code e, size_t bytes_recvd) {
         // calculate sum shit
 
-        // immediately grab the receipt time  
+        // immediately grab the receipt time
         mtime_t from_recv = get_millisecond_time();
-        
+
         // unpack the time packet
         Packet * p = Packet::unpack(this->tp_buffer, bytes_recvd);
         TPacket * tp = static_cast<TPacket *> (p);
