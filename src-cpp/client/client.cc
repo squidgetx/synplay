@@ -64,13 +64,15 @@ void Client::receive() {
       if (!ec && bytes_recvd > 0)
       {
         Packet *packet = Packet::unpack(data,bytes_recvd);
-        switch (packet->get_type()){
-          case PacketType::TIME:
-            receive_timesync(static_cast<TPacket *> (packet),to_recvd);
-            break;
-          case PacketType::DATA:
-            receive_data(static_cast<MPacket *> (packet));
-            break;
+        if (packet != nullptr) {
+          switch (packet->get_type()){
+            case PacketType::TIME:
+              receive_timesync(static_cast<TPacket *> (packet),to_recvd);
+              break;
+            case PacketType::DATA:
+              receive_data(static_cast<MPacket *> (packet));
+              break;
+          }
         }
         receive();
       }
