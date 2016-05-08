@@ -73,7 +73,7 @@ void Master::send_data(){
   }
 
   time_t now = get_millisecond_time();
-  MPacket mp(now,buf,num_read);
+  MPacket mp(now + 1000, buf,num_read);
  // std::cerr << "sending ";
  // mp.print_all();
   socket.async_send_to(
