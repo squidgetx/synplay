@@ -22,6 +22,20 @@
 
 using asio::ip::udp;
 
+typedef enum {
+  STOPPED = 0,
+  STARTED = 1
+} PaStreamState;
+
+typedef struct streamState {
+  std::deque<int16_t> * play_buffer;
+  PaTime start_t;
+  PaStreamState state;
+  streamState(int int_size) : start_t(0), state(STOPPED) {
+    play_buffer = new std::deque<int16_t>(int_size);
+  };
+} streamState;
+
 class Client {
   public:
     Client(asio::io_service& io_service, uint16_t p);
@@ -40,14 +54,14 @@ class Client {
     udp::endpoint sender_endpoint;
     uint8_t data[LEN];
     RingBuffer<MPacket*> packet_buffer;
-    std::deque<int16_t> play_buffer;
     int16_t file_buf[BUFFER_LENGTH];
-    SndfileHandle file;
 
     PaStream *stream;
 
     mtime_offset_t offset;
     mtime_offset_t pa_offset;
+
+    streamState * s_state;
 };
 
 #endif
