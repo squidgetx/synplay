@@ -29,8 +29,9 @@ void Master::send_timesync(udp::endpoint& remote_endpt) {
   TPacket tp;
   tp.from_sent = get_millisecond_time();
 
-  socket.async_send_to(asio::buffer(tp.pack()),remote_endpt,[this,remote_endpt](error_code,size_t) {
-      this->receive_timesync_reply(remote_endpt);
+  socket.async_send_to(asio::buffer(tp.pack()),remote_endpt,
+      [this,remote_endpt](error_code,size_t) {
+          this->receive_timesync_reply(remote_endpt);
       });
 }
 
@@ -86,16 +87,14 @@ void Master::send_data(udp::endpoint& remote_endpt, asio::const_buffer& buf){
 }
 
 void Master::send_data(){
-  int16_t *buf = new int16_t[BUFFER_SIZE] ;
-
-  sf_count_t num_read = file.read (buf, BUFFER_SIZE) ;
+  sf_count_t num_read = file.read (data_buffer, BUFFER_SIZE) ;
 
   if (!num_read){
     return;
   }
 
   time_t now = get_millisecond_time();
-  MPacket mp(now + 1000, buf,num_read);
+  MPacket mp(now + 1000, data_buffer,num_read);
  // std::cerr << "sending ";
  // mp.print_all();
 
