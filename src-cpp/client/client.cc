@@ -137,20 +137,33 @@ void Client::start() {
 
   /* Set up Port Audio */
   PaError err = Pa_Initialize();
-  if (err != paNoError) goto error;
+  if (err != paNoError) {
+    fprintf( stderr, "An error occured while initializing the portaudio stream\n" );
+    Pa_Terminate();
+    fprintf( stderr, "Error number: %d\n", err );
+    fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( err ) );
+    return;
+
+  }
 
   // Determine Device Index
   host_idx = Pa_HostApiTypeIdToHostApiIndex(paJACK);
   device_idx = Pa_GetDefaultOutputDevice();
+  std::cerr << "Default device idx : " << device_idx << std::endl;
   if (host_idx != paHostApiNotFound) {
     device_idx = Pa_HostApiDeviceIndexToDeviceIndex(host_idx, 0);
+    std::cerr << "JACK device idx : " << device_idx << std::endl;
     if (device_idx == paInvalidDevice) {
       device_idx = Pa_GetDefaultOutputDevice();
       std::cerr << "Unable to use JACK." << std::endl;
     }
+  } else {
+    std::cerr << "JACK not found" << std::endl;
   }
 
-  latency = Pa_GetDeviceInfo(device_idx)->defaultLowOutputLatency;
+  const PaDeviceInfo * deviceInfo = Pa_GetDeviceInfo(device_idx);
+  latency = deviceInfo->defaultLowOutputLatency;
+  std::cerr << "Device sample rate: " << deviceInfo->defaultSampleRate;
 
   PaStreamParameters output_parameters;
   output_parameters.device = device_idx;
@@ -162,10 +175,16 @@ void Client::start() {
   /* No input, 2 stereo out */
   err = Pa_OpenStream(&stream, NULL, &output_parameters,
       SAMPLE_RATE, 64, paNoFlag, pacallback, &play_buffer);
-  if (err != paNoError) goto error;
+  if (err != paNoError) {
+    fprintf( stderr, "An error occured while opening the portaudio stream\n" );
+    goto error;
+  }
 
   err = Pa_StartStream(stream);
-  if (err != paNoError) goto error;
+  if (err != paNoError) {
+    fprintf( stderr, "An error occured while starting the portaudio stream\n" );
+    goto error;
+  }
 
   Pa_Sleep(1000);
 
@@ -182,7 +201,6 @@ void Client::start() {
   return;
 error:
   Pa_Terminate();
-  fprintf( stderr, "An error occured while using the portaudio stream\n" );
   fprintf( stderr, "Error number: %d\n", err );
   fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( err ) );
   return;
