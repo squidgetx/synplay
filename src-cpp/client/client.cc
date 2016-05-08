@@ -3,6 +3,7 @@
 #include "net/time_packet.h"
 #include "util/syntime.h"
 
+static int received = 0;
 
 static int pacallback(const void *inputBuffer, void* outputBuffer,
     unsigned long framesPerBuffer,
@@ -83,7 +84,9 @@ void Client::receive() {
 }
 
 void Client::receive_data(MPacket *mpacket) {
-        //mpacket->print();
+       // mpacket->print();
+        received++;
+        printf("%d\r\n", received);
         s_state->play_buffer->insert(s_state->play_buffer->end(), mpacket->get_payload(), mpacket->get_payload() + mpacket->get_payload_size());
 
         if (s_state->start_t == 0) {
