@@ -25,17 +25,18 @@ Master::Master(string& fname,vector<udp::endpoint>& r_endpts) :
 Master::~Master(){
 }
 
+template <typename WriteHandler> 
+      void Master::async_send_to(asio::ip::udp::endpoint& remote_endpt, Packet& pack, WriteHandler wh){
+  socket.async_send_to(asio::buffer(pack.pack()), remote_endpt, wh);
+}
+    
 void Master::send_timesync(udp::endpoint& remote_endpt) {
   TPacket tp;
   tp.from_sent = get_millisecond_time();
 
-  // send the packet to the client
-  socket.async_send_to(
-      asio::buffer(tp.pack()), remote_endpt,
-      [this,&remote_endpt](error_code, size_t) {
-        this->receive_timesync_reply(remote_endpt);
-      }
-  );
+  async_send_to(remote_endpt,tp,[this,&remote_endpt](error_code,size_t) {
+      this->receive_timesync_reply(remote_endpt);
+      });
 }
 
 // send a timesync to every remote endpoint.
@@ -80,7 +81,18 @@ void Master::receive_timesync_reply(udp::endpoint remote_endpt) {
 
 static int sent = 0;
 
-void Master::send_data(udp::endpoint& remote_endpt){
+void Master::send_data(udp::endpoint& remote_endpt, MPacket &mp){
+
+  async_send_to(remote_endpt,mp,
+    [this](error_code /*ec*/, size_t /*bytes_sent*/){
+      // QUESTION: this sends more to everyone in the callback for
+      // one successful sent packet... what to do instead?
+      this->send_data();
+    });
+//  std::cout << sent << std::endl;
+}
+
+void Master::send_data(){
   sent++;
   int16_t *buf = new int16_t[BUFFER_SIZE] ;
 
@@ -94,19 +106,9 @@ void Master::send_data(udp::endpoint& remote_endpt){
   MPacket mp(now + 1000, buf,num_read);
  // std::cerr << "sending ";
  // mp.print_all();
-  socket.async_send_to(
-    asio::buffer(mp.pack()), remote_endpt,
-    [this](error_code /*ec*/, size_t /*bytes_sent*/)
-    {
-      this->send_data();
-    });
 
-//  std::cout << sent << std::endl;
-}
-
-void Master::send_data(){
   for (udp::endpoint& remote_endpt : remote_endpts) {
-    send_data(remote_endpt);
+    send_data(remote_endpt,mp);
   }
 }
 
