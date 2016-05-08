@@ -9,6 +9,16 @@ MPacket::MPacket(time_t time, int16_t* p, size_t ps) : timestamp(time),
     
 }
 
+int MPacket::remaining() {
+  return payload_size - play_head;
+}
+
+int16_t MPacket::get_int16_t() {
+  int16_t ret = payload[play_head];
+  play_head++;
+  return ret;
+}
+
 PaTime MPacket::get_pa_timestamp() {
   return pa_timestamp;
 }

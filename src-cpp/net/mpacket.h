@@ -16,18 +16,29 @@ class MPacket : public Packet {
     int16_t* get_payload();
     size_t get_payload_size();
     time_t get_timestamp();
-    PaTime get_pa_timestamp();
-    void set_pa_timestamp(PaTime pt);
     void print();
     void print_all();
     asio::const_buffer pack() const;
     static MPacket* unpack(uint8_t * p, std::size_t n);
+
+    /* Methods to control playback on the client side */
+    void set_pa_timestamp(PaTime pt);
+    PaTime get_pa_timestamp();
+
+    // Pull an int16_t from the packet payload buffer
+    int16_t get_int16_t();
+
+    // How many int16_ts are left in the packet payload buffer
+    int remaining();
 
   private:
     int16_t* payload;
     size_t payload_size;
     time_t timestamp;
     PaTime pa_timestamp;
+    int play_head;
+
+
 };
 
 
