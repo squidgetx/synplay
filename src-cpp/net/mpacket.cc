@@ -2,8 +2,19 @@
 
 #include "util/mutable_byte_buffer.h"
 
-MPacket::MPacket(time_t time, int16_t* p, size_t ps) : timestamp(time), payload(p), payload_size(ps), Packet::Packet(PacketType::DATA) {
+MPacket::MPacket(time_t time, int16_t* p, size_t ps) : timestamp(time),
+  payload(p), payload_size(ps), Packet::Packet(PacketType::DATA) {
 
+    pa_timestamp = 0;
+    
+}
+
+PaTime MPacket::get_pa_timestamp() {
+  return pa_timestamp;
+}
+
+void MPacket::set_pa_timestamp(PaTime pt) {
+  pa_timestamp = pt;
 }
 
 size_t MPacket::get_payload_size() {

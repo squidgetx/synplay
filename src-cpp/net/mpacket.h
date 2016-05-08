@@ -8,6 +8,7 @@
 #include "asio.hpp"
 #include "util/bytebuffer.h"
 #include "net/packet.h"
+#include <portaudio.h>
 
 class MPacket : public Packet {
   public:
@@ -15,6 +16,8 @@ class MPacket : public Packet {
     int16_t* get_payload();
     size_t get_payload_size();
     time_t get_timestamp();
+    PaTime get_pa_timestamp();
+    void set_pa_timestamp(PaTime pt);
     void print();
     void print_all();
     asio::const_buffer pack() const;
@@ -24,6 +27,7 @@ class MPacket : public Packet {
     int16_t* payload;
     size_t payload_size;
     time_t timestamp;
+    PaTime pa_timestamp;
 };
 
 
