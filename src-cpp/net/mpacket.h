@@ -10,12 +10,15 @@
 #include "net/packet.h"
 #include <portaudio.h>
 
+// for the mtime_t data type
+#include "net/time_packet.h"
+
 class MPacket : public Packet {
   public:
-    MPacket(time_t time, int16_t* p, size_t psize);
+    MPacket(mtime_t time, int16_t* p, size_t psize);
     int16_t* get_payload();
     size_t get_payload_size();
-    time_t get_timestamp();
+    mtime_t get_timestamp();
     void print();
     void print_all();
     asio::const_buffer pack() const;
@@ -34,11 +37,9 @@ class MPacket : public Packet {
   private:
     int16_t* payload;
     size_t payload_size;
-    time_t timestamp;
     PaTime pa_timestamp;
     int play_head;
-
-
+    mtime_t timestamp;
 };
 
 
