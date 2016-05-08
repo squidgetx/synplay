@@ -86,13 +86,16 @@ void Client::receive() {
 void Client::receive_data(MPacket *mpacket) {
         received++;
         printf("%d\r", received);
-        s_state->play_buffer->insert(s_state->play_buffer->end(), mpacket->get_payload(), mpacket->get_payload() + mpacket->get_payload_size());
+        //s_state->play_buffer->insert(s_state->play_buffer->end(), mpacket->get_payload(), mpacket->get_payload() + mpacket->get_payload_size());
+        mpacket->set_pa_timestamp(get_pa_time(mpacket->get_timestamp()));
+        s_state->packet_buffer->push_back(mpacket);
 
+        /*
         if (s_state->start_t == 0) {
           // convert this to stream time
           s_state->start_t  = get_pa_time(mpacket->get_timestamp());
           std::cerr << "Start_t set to " << s_state->start_t << std::endl;
-        }
+        }*/
 }
 
 void Client::receive_timesync(TPacket *tpacket, mtime_t to_recvd) {
