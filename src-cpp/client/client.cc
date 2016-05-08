@@ -95,7 +95,7 @@ void Client::receive_data(MPacket *mpacket) {
         if (start_t == 0) {
           // convert this to stream time
           start_t  = (PaTime) (mpacket->get_timestamp() + offset + pa_offset) / 1000;
-          std::cerr << "Start_t set to " << start_t << std::endl;
+          std::cerr << "Start_t set to " << start_t << "(" << mpacket->get_timestamp() + offset +  pa_offset << "ms)" << std::endl;
         }
 }
 
@@ -110,7 +110,8 @@ void Client::receive_timesync(TPacket *tpacket, mtime_t to_recvd) {
           PaTime pa_start_time = Pa_GetStreamTime(stream);
           std::cerr << "Stream time: " << pa_start_time << std::endl;
           mtime_t system_start_time = get_millisecond_time();
-          pa_offset = ((mtime_t) pa_start_time * 1000) - system_start_time;
+          std::cerr << "System time: " << system_start_time << std::endl;
+          pa_offset = ((mtime_t) (pa_start_time * 1000)) - system_start_time;
           std::cerr << "pa_offset: " << pa_offset << std::endl;
         }
 
@@ -163,7 +164,7 @@ void Client::start() {
 
   const PaDeviceInfo * deviceInfo = Pa_GetDeviceInfo(device_idx);
   latency = deviceInfo->defaultLowOutputLatency;
-  std::cerr << "Device sample rate: " << deviceInfo->defaultSampleRate;
+  std::cerr << "Device sample rate: " << deviceInfo->defaultSampleRate << std::endl;
 
   PaStreamParameters output_parameters;
   output_parameters.device = device_idx;
