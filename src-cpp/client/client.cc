@@ -21,6 +21,7 @@ static int pacallback(const void *inputBuffer, void* outputBuffer,
 
   for(unsigned long i = 0; i < framesPerBuffer; i++) {
 
+    // Don't play anything if there are no packets to play
     if (packet_buffer->empty()) {
       *(audio_out++) = 0;
       *(audio_out++) = 0;
@@ -28,12 +29,26 @@ static int pacallback(const void *inputBuffer, void* outputBuffer,
     }
 
     MPacket * mp = packet_buffer->front();
+
+    // Make sure timestamps are monotonically increasing
+    // (discard packets that have a timestamp less than
+    // the most recent timestamp we have seen)
+    if (mp->get_pa_timestamp() < s_state->last_timestamp) {
+      packet_buffer->pop_front();
+      i--;
+    } else {
+      s_state->last_timestamp = mp->get_pa_timestamp();
+    }
+
     
+    // Don't play if it's not time to play this packet yet
     if (mp->get_pa_timestamp() >= play_time) {
       *(audio_out++) = 0;
       *(audio_out++) = 0;
       continue;
     }
+    
+    // Get the next packet if this one is finished
     if (mp->remaining() < 2) {
       packet_buffer->pop_front();
       i--;
