@@ -32,8 +32,6 @@ class Master
     std::vector<uint64_t> packet_count;
 
     // Audio sampling parameters
-    // Sample rate (Hz).
-    const uint32_t SAMPLE_RATE = 44100;
     // The initial offset from the master time to use for the clients.
     // Should account for maxium network latency to a client.
     const mtime_offset_t STREAM_OFFSET = 1000;
