@@ -62,7 +62,6 @@ void Master::receive_everything() {
         // Reset attempts
         cxn.attempts = 0;
 
-        bool continueReceive = true;
 
         switch (cxn.state) {
           case MConnection::NAKED:
@@ -92,18 +91,7 @@ void Master::receive_everything() {
             }
             cxn.state = MConnection::PENDING_ALL_SYNCED;
             synced++;
-            if (synced == connections.size()) {
-              // All cxns are pending all synced!
-              for (auto& kv : connections) {
-                // Sanity check: make sure that all the states are indeed
-                // PENDING_ALL_SYNCED
-                check_or_die(kv.second.state == MConnection::PENDING_ALL_SYNCED,
-                    "Not all connections have been time synced yet");
-                kv.second.state = MConnection::SENDING_DATA;
-              }
-              continueReceive = false;
-              send_data();
-            }
+            try_send_data();
             break;
           case MConnection::PENDING_ALL_SYNCED:
             // Shouldn't be getting any packets in this state
@@ -119,11 +107,27 @@ void Master::receive_everything() {
             break;
         }
 
-        if (continueReceive) {
+        if (listening) {
           receive_everything();
         }
       }
   );
+}
+
+void Master::try_send_data() {
+  if (synced == connections.size()) {
+    // All cxns are pending all synced!
+    for (auto& kv : connections) {
+      // Sanity check: make sure that all the states are indeed
+      // PENDING_ALL_SYNCED
+      check_or_die(kv.second.state == MConnection::PENDING_ALL_SYNCED,
+          "Not all connections have been time synced yet");
+      kv.second.state = MConnection::SENDING_DATA;
+    }
+    listening = false;
+    send_data();
+  }
+
 }
 
 // send a timesync to every remote endpoint.
@@ -167,6 +171,8 @@ void Master::send_initial_timesync(const udp::endpoint& remote_endpt, MConnectio
     timer->cancel();
     delete timer;
     cxn.timer = NULL;
+    this->connections.erase(remote_endpt);
+    try_send_data();
     return;
   } else {
     cerr << "send_initial_timesync remote_endpt = " << remote_endpt << ", attempt = " << cxn.attempts << endl;
@@ -200,6 +206,8 @@ void Master::send_final_timesync(const asio::ip::udp::endpoint& remote_endpt, TP
       timer->cancel();
       delete timer;
       cxn.timer = NULL;
+      this->connections.erase(remote_endpt);
+      try_send_data();
       return;
     } else {
       cerr << "send_final_timesync remote_endpt = " << remote_endpt << ", attempt = " << cxn.attempts << endl;

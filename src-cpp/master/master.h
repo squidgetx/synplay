@@ -57,6 +57,7 @@ class Master
     uint16_t outstanding_packets;
 
     bool isDone = false;
+    bool listening = true;
 
     void send_data(const asio::ip::udp::endpoint& remote_endpt, asio::const_buffer& buf);
     void send_data();
@@ -67,6 +68,7 @@ class Master
     void send_final_timesync(const asio::ip::udp::endpoint& remote_endpt, TPacket *tp, MConnection &cxn);
 
     void receive_everything();
+    void try_send_data();
 
     template <typename WriteHandler>
     asio::deadline_timer* start_timer(const asio::ip::udp::endpoint& remote_endpt, WriteHandler handler);
