@@ -89,7 +89,8 @@ void Master::receive_everything() {
               for (auto& kv : connections) {
                 // Sanity check: make sure that all the states are indeed
                 // PENDING_ALL_SYNCED
-                check_or_die(kv.second.state == MConnection::PENDING_ALL_SYNCED);
+                check_or_die(kv.second.state == MConnection::PENDING_ALL_SYNCED,
+                    "Not all connections have been time synced yet");
                 kv.second.state = MConnection::SENDING_DATA;
               }
               sendData();
@@ -98,11 +99,14 @@ void Master::receive_everything() {
             break;
           case MConnection::PENDING_ALL_SYNCED:
             // Shouldn't be getting any packets in this state
+            PANIC("Got a packet while in PENDING_ALL_SYNCED!");
             break;
           case MConnection::SENDING_DATA:
+            PANIC("Got a packet while in SENDING_DATA");
             // Shouldn't be getting any packets in this state
             break;
           default:
+            PANIC("Connection state invalid!");
             // Shouldn't be getting any packets in this state
             break;
         }
