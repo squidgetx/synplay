@@ -93,7 +93,7 @@ void Master::send_data(udp::endpoint& remote_endpt, asio::const_buffer& buf, /* 
         if (ec){
             cerr << ec.message() << endl;
         } else if (--this->outstanding_packets == 0) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(3));
+            std::this_thread::sleep_for(std::chrono::milliseconds(6));
             this->send_data();
         }
     });
@@ -110,12 +110,13 @@ void Master::send_data(){
   sf_count_t num_read = file.read (data_buffer, MPacket::FRAMES_PER_PACKET*MPacket::FRAME_SIZE) ;
 
   if (!num_read){
+    isDone = true;
     return;
   }
 
   mtime_t time = stream_start + (n_frames_sent * 1000) / SAMPLE_RATE;
   n_frames_sent += MPacket::FRAMES_PER_PACKET;
-  MPacket mp(time, data_buffer,num_read);
+  MPacket mp(time, data_buffer, MPacket::PACKET_SHORT_SIZE);
   std::cerr << "sending ";
   mp.print();
 
@@ -128,7 +129,9 @@ void Master::send_data(){
 
 void Master::run(){
   send_timesync();
-  io_service.run();
+
+  while (!isDone)
+    io_service.run();
 
   std::cerr << "Packet counts" << std::endl;
   for (auto&& it = remote_endpts.begin(); it < remote_endpts.end(); it++) {

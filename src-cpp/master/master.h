@@ -47,6 +47,8 @@ class Master
     uint16_t synced;
     uint16_t outstanding_packets;
 
+    bool isDone = false;
+
     void send_data(asio::ip::udp::endpoint& remote_endpt, asio::const_buffer& buf, /* debugging */ uint64_t &sent);
     void send_data();
 
