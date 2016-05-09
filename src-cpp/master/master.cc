@@ -55,10 +55,10 @@ asio::deadline_timer *Master::start_timer(udp::endpoint& remote_endpt, int16_t a
 
 void Master::send_initial_timesync(udp::endpoint& remote_endpt, int16_t attempt) {
 
-  cerr << "send_timesync remote_endpt = " << remote_endpt << ", attempt = " << attempt << endl;
+  cerr << "send_initial_timesync remote_endpt = " << remote_endpt << ", attempt = " << attempt << endl;
 
   if (attempt > 2){
-    cerr << "Giving up on: " << remote_endpt << endl;
+    cerr << "send_initial_timesync give up on: " << remote_endpt << endl;
     return;
   }
 
@@ -97,12 +97,20 @@ void Master::receive_initial_timesync_reply(udp::endpoint& remote_endpt, int16_t
         mtime_offset_t offset = ((static_cast<mtime_offset_t> (tp->to_recvd) - static_cast<mtime_offset_t> (tp->from_sent)) + (static_cast<mtime_offset_t> (tp->to_sent) - static_cast<mtime_offset_t> (tp->from_recvd)))/2;
         tp->offset = offset;
         
-        this->send_final_timesync(remote_endpt,tp);
+        this->send_final_timesync(remote_endpt,tp, attempt);
       }
   );
 }
 
 void Master::send_final_timesync(asio::ip::udp::endpoint& remote_endpt, TPacket *tp, int16_t attempt){
+
+  cerr << "send_final_timesync remote_endpt = " << remote_endpt << ", attempt = " << attempt << endl;
+
+  if (attempt > 2){
+    cerr << "send_final_timesync give up on: " << remote_endpt << endl;
+    return;
+  }
+
   // and send the reply
   socket.async_send_to(
       asio::buffer(tp->pack()), remote_endpt,
