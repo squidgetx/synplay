@@ -15,9 +15,10 @@ using namespace std;
 using namespace asio::ip;
 
 Master::Master(string& fname,vector<udp::endpoint>& r_endpts) :
-  remote_endpts(r_endpts), io_service(), socket(io_service,udp::endpoint(udp::v4(),0)), synced(0), outstanding_packets(0), packet_count(remote_endpts.size(), 0)
+  remote_endpts(r_endpts), io_service(), socket(io_service,udp::endpoint(udp::v4(),0)), synced(0), outstanding_packets(0)
 {
   file = SndfileHandle (fname);
+  packet_count = {r_endpts.size(), 0};
 
   std::cerr << "Opened file '" << fname << "'" << std::endl;
   std::cerr << "\tSample rate '" << file.samplerate() << "'" << std::endl;
@@ -85,10 +86,10 @@ void Master::send_data(udp::endpoint& remote_endpt, asio::const_buffer& buf, /* 
     [this,&sent](error_code ec, size_t /*bytes_sent*/){
       // QUESTION: this sends more to everyone in the callback for
       // one successful sent packet... what to do instead?
+        sent++;
         if (ec){
             cerr << ec.message() << endl;
         } else if (--this->outstanding_packets == 0) {
-            sent++;
             this->send_data();
         }
     });
@@ -96,18 +97,23 @@ void Master::send_data(udp::endpoint& remote_endpt, asio::const_buffer& buf, /* 
 }
 
 void Master::send_data(){
-    outstanding_packets = remote_endpts.size();
+  outstanding_packets = remote_endpts.size();
 
-  sf_count_t num_read = file.read (data_buffer, BUFFER_SIZE) ;
+  if (stream_start == 0) {
+    stream_start = get_millisecond_time() + STREAM_OFFSET;
+  }
+
+  sf_count_t num_read = file.read (data_buffer, MPacket::FRAMES_PER_PACKET*MPacket::FRAME_SIZE) ;
 
   if (!num_read){
     return;
   }
 
-  mtime_t now = get_millisecond_time();
-  MPacket mp(now + 1000, data_buffer,num_read);
- // std::cerr << "sending ";
- // mp.print_all();
+  mtime_t time = stream_start + (n_frames_sent * 1000) / SAMPLE_RATE;
+  n_frames_sent += MPacket::FRAMES_PER_PACKET;
+  MPacket mp(time, data_buffer,num_read);
+  std::cerr << "sending ";
+  mp.print();
 
   asio::const_buffer mp_buf = mp.pack();
 
