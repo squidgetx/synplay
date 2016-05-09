@@ -27,13 +27,21 @@ Master::Master(string& fname,vector<udp::endpoint>& r_endpts) :
 Master::~Master(){
 }
 
-void Master::send_timesync(udp::endpoint& remote_endpt) {
+void Master::send_timesync(udp::endpoint& remote_endpt, int16_t attempt) {
+
+  cerr << "send_timesync remote_endpt = " << remote_endpt << ", attempt = " << attempt << endl;
+
+  if (attempt > 2){
+    cerr << "Giving up on: " << remote_endpt << endl;
+    return;
+  }
+
   TPacket tp;
   tp.from_sent = get_millisecond_time();
 
   socket.async_send_to(asio::buffer(tp.pack()),remote_endpt,
-      [this,&remote_endpt](error_code,size_t) {
-          this->receive_timesync_reply(remote_endpt);
+      [this,&remote_endpt,attempt](error_code,size_t) {
+          this->receive_timesync_reply(remote_endpt,attempt);
       });
 }
 
@@ -44,27 +52,25 @@ void Master::send_timesync(){
   }
 }
 
-static void timeout_handler(const std::error_code& error){
-  if (error){
-    cerr << error.message() << endl;
-  } else {
-    cerr << "timeout" << endl;
-  }
-}
-
-void Master::receive_timesync_reply(udp::endpoint& remote_endpt) {
+void Master::receive_timesync_reply(udp::endpoint& remote_endpt, int16_t attempt) {
   
   // register timeout
   asio::deadline_timer *timer = new asio::deadline_timer(io_service);
   timer->expires_from_now(boost::posix_time::seconds(1));
-  timer->async_wait(timeout_handler);
-  timers.push_back(timer);
+  timer->async_wait([this,&remote_endpt,attempt](const std::error_code& error){
+    if (!error){
+      cerr << "timeout: " << remote_endpt << endl;
+      this->send_timesync(remote_endpt, attempt + 1);
+    }
+  });
 
   socket.async_receive_from(
       asio::buffer(this->tp_buffer, TP_BUFFER_SIZE), remote_endpt,
-      [this,&remote_endpt](error_code e, size_t bytes_recvd){
+      [this,&remote_endpt,timer](error_code e, size_t bytes_recvd){
         // calculate sum shit
-
+        timer->cancel();
+        delete timer;
+        
         // immediately grab the receipt time
         mtime_t from_recv = get_millisecond_time();
         // unpack the time packet
