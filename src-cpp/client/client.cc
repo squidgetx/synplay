@@ -110,12 +110,14 @@ void Client::receive_timesync(TPacket *tpacket, mtime_t to_recvd) {
   tpacket->to_recvd = to_recvd;
   tpacket->to_sent = get_millisecond_time();
 
-  if (tpacket->tp_type == COMPLETE) {
+  if (tpacket->tp_type == COMPLETE || tpacket->tp_type == FINAL) {
     offset = tpacket->offset;
     std::cerr << "recieved offset " << offset << std::endl;
     avg_offset += offset;
     avg_rounds += 1;
-  } else if (tpacket->tp_type == FINAL) {
+  }
+
+  if (tpacket->tp_type == FINAL) {
     // Get offset between stream time and current time
     PaTime pa_start_time = Pa_GetStreamTime(stream);
     std::cerr << "Stream time: " << pa_start_time << std::endl;
