@@ -38,12 +38,12 @@ void Master::send_timesync(){
   }
 }
 
-template<typename WaitHandler>
-asio::deadline_timer *Master::start_timer(udp::endpoint& remote_endpt, int16_t attempt, WaitHandler handler){
+    template <typename WriteHandler>
+asio::deadline_timer *Master::start_timer(asio::ip::udp::endpoint& remote_endpt, int16_t attempt, WriteHandler handler){
   // register timeout
   asio::deadline_timer *timer = new asio::deadline_timer(io_service);
   timer->expires_from_now(boost::posix_time::seconds(1));
-  timer->async_wait([this,&remote_endpt,&handler](const std::error_code& error){
+  timer->async_wait([this,&remote_endpt,handler](const std::error_code& error){
     if (!error){
       cerr << "timeout: " << remote_endpt << endl;
       handler(); 
@@ -55,11 +55,11 @@ asio::deadline_timer *Master::start_timer(udp::endpoint& remote_endpt, int16_t a
 
 void Master::send_initial_timesync(udp::endpoint& remote_endpt, int16_t attempt) {
 
-  cerr << "send_initial_timesync remote_endpt = " << remote_endpt << ", attempt = " << attempt << endl;
-
-  if (attempt > 2){
+  if (attempt > 2) {
     cerr << "send_initial_timesync give up on: " << remote_endpt << endl;
     return;
+  } else {
+    cerr << "send_initial_timesync remote_endpt = " << remote_endpt << ", attempt = " << attempt << endl;
   }
 
   TPacket tp;
@@ -97,18 +97,20 @@ void Master::receive_initial_timesync_reply(udp::endpoint& remote_endpt, int16_t
         mtime_offset_t offset = ((static_cast<mtime_offset_t> (tp->to_recvd) - static_cast<mtime_offset_t> (tp->from_sent)) + (static_cast<mtime_offset_t> (tp->to_sent) - static_cast<mtime_offset_t> (tp->from_recvd)))/2;
         tp->offset = offset;
         
-        this->send_final_timesync(remote_endpt,tp, attempt);
+        // attempt to send the final timesync (with the offset calculated).
+        this->send_final_timesync(remote_endpt,tp);
       }
   );
 }
 
 void Master::send_final_timesync(asio::ip::udp::endpoint& remote_endpt, TPacket *tp, int16_t attempt){
 
-  cerr << "send_final_timesync remote_endpt = " << remote_endpt << ", attempt = " << attempt << endl;
 
   if (attempt > 2){
     cerr << "send_final_timesync give up on: " << remote_endpt << endl;
     return;
+  } else {
+    cerr << "send_final_timesync remote_endpt = " << remote_endpt << ", attempt = " << attempt << endl;
   }
 
   // and send the reply
