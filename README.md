@@ -12,7 +12,7 @@ where `-B` ensures that all headers and rebuilt, if necessary.
 The master is run as follows:
 
 ```
-bin/master filename [ADDR PORT]+
+./bin/master filename [ADDR PORT]+
 ```
 
 where filename is the file to send. `(ADDR,PORT)` are pairs of IP address, port to which the file should be sent. Any number of address, port pairs may be specified. 
@@ -22,7 +22,7 @@ Note that only the audio formats supported by `libsndfile` are supported. Specif
 To run the client, 
 
 ```
-bin/client PORT
+./bin/client PORT
 ```
 
 where `PORT` is the port on which the client will listen for audio packets.
@@ -32,8 +32,12 @@ Dependencies
 
 - libsndfile
 - libportaudio
+- boost
+- asio (*vendored*)
+
+These dependencies are available on `apt`, `dnf`, or the `brew` package manager.
 
 JACK
 ====
 
-By default, this program attempts to use JACK, a low latency audio layer. Please be sure to start JACK with a default sample rate of 44.1kHZ! ex: `jackd -d alsa -r 44100`
+By default, this program attempts to use JACK, a low latency audio layer. Please be sure to start JACK with a default sample rate of 44.1kHZ! ex: `jackd -d alsa -r 44100`.
