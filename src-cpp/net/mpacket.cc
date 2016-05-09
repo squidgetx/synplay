@@ -51,9 +51,9 @@ asio::const_buffer MPacket::pack() const {
 MPacket * MPacket::unpack(uint8_t* p, std::size_t size) {
   ByteBuffer buf(p, size);
   mtime_t timestamp = 0;
-  int16_t * payload = new int16_t[PACKET_SHORT_SIZE];
   buf.get_unsigned_long(&timestamp);
   size_t payload_size = buf.remaining() / sizeof(int16_t);
+  int16_t * payload = new int16_t[payload_size];
   buf.get_nshorts(payload, payload_size);
   return new MPacket(timestamp, payload, payload_size);
 }

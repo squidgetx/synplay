@@ -11,6 +11,7 @@
 #include "net/mpacket.h"
 #include "net/time_packet.h"
 #include <sndfile.hh>
+#include "util/constants.h"
 
 #define TP_BUFFER_SIZE (2 + 5 * 8)
 
@@ -31,8 +32,6 @@ class Master
     std::vector<uint64_t> packet_count;
 
     // Audio sampling parameters
-    // Sample rate (Hz).
-    const uint32_t SAMPLE_RATE = 44100;
     // The initial offset from the master time to use for the clients.
     // Should account for maxium network latency to a client.
     const mtime_offset_t STREAM_OFFSET = 1000;
@@ -43,7 +42,7 @@ class Master
     std::size_t n_frames_sent = 0;
 
     uint8_t tp_buffer[TP_BUFFER_SIZE];
-    int16_t data_buffer[MPacket::PACKET_SHORT_SIZE];
+    int16_t data_buffer[SAMPLES_PER_PACKET];
     uint16_t synced;
     uint16_t outstanding_packets;
 

@@ -12,13 +12,12 @@
 #include "net/mpacket.h"
 #include "net/time_packet.h"
 #include "net/packet.h"
+#include "util/constants.h"
 
 #define LEN 4096 
-// ^^ This should be approx 2x the size of Master::BUFFER_SIZE
+// ^^ This should be approx 2x the size of util/constants::SAMPLES_PER_PACKET
 // since master buffer size is in shorts (2 bytes)
 
-#define BUFFER_LENGTH 1024
-#define SAMPLE_RATE 44100
 
 using asio::ip::udp;
 
@@ -49,7 +48,6 @@ class Client {
     udp::socket socket;
     udp::endpoint sender_endpoint;
     uint8_t data[LEN];
-    int16_t file_buf[BUFFER_LENGTH];
 
     PaStream *stream;
 

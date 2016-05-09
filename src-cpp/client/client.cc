@@ -120,15 +120,16 @@ void Client::receive_timesync(TPacket *tpacket, mtime_t to_recvd) {
     std::cerr << "System time: " << system_start_time << std::endl;
     pa_offset = ((mtime_t) (pa_start_time * 1000)) - system_start_time;
     std::cerr << "pa_offset: " << pa_offset << std::endl;
-  } else {
-    // and send the reply
-    socket.async_send_to(
-        asio::buffer(tpacket->pack()), sender_endpoint,
-        [this](std::error_code, std::size_t) {
-          // reply sent
-        }
-    );
   }
+
+  // and send the reply
+  socket.async_send_to(
+    asio::buffer(tpacket->pack()), sender_endpoint,
+    [this](std::error_code, std::size_t) {
+      // reply sent
+    }
+  );
+  
 }
 
 Client::Client(asio::io_service& io_service, uint16_t p) : port(p), 

@@ -12,8 +12,6 @@
 #include "util/syntime.h"
 #include "util/assert.h"
 
-
-
 using namespace std;
 using namespace asio::ip;
 
@@ -147,7 +145,7 @@ void Master::send_data(udp::endpoint& remote_endpt, asio::const_buffer& buf, /* 
         if (ec){
             cerr << ec.message() << endl;
         } else if (--this->outstanding_packets == 0) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(6));
+            std::this_thread::sleep_for(std::chrono::milliseconds(PACKET_TIME_MS / SEND_SPEED_FACTOR));
             this->send_data();
         }
     });
@@ -161,16 +159,16 @@ void Master::send_data(){
     stream_start = get_millisecond_time() + STREAM_OFFSET;
   }
 
-  sf_count_t num_read = file.read (data_buffer, MPacket::FRAMES_PER_PACKET*MPacket::FRAME_SIZE) ;
+  sf_count_t num_read = file.read (data_buffer, SAMPLES_PER_PACKET) ;
 
   if (!num_read){
     isDone = true;
     return;
   }
 
-  mtime_t time = stream_start + (n_frames_sent * 1000) / SAMPLE_RATE;
-  n_frames_sent += MPacket::FRAMES_PER_PACKET;
-  MPacket mp(time, data_buffer, MPacket::PACKET_SHORT_SIZE);
+  stream_start = stream_start + PACKET_TIME_MS;
+  n_frames_sent += FRAMES_PER_PACKET;
+  MPacket mp(stream_start, data_buffer, SAMPLES_PER_PACKET);
   std::cerr << "sending ";
   mp.print();
 

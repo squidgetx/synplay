@@ -32,10 +32,6 @@ class MPacket : public Packet {
     // How many int16_ts are left in the packet payload buffer
     int remaining();
 
-    // Frames per packet (10ms audio)
-    static constexpr std::size_t FRAMES_PER_PACKET = 441;
-    static constexpr std::size_t FRAME_SIZE = sizeof(int16_t)*2;
-    static constexpr std::size_t PACKET_SHORT_SIZE = FRAMES_PER_PACKET * 2;
   private:
     int16_t* payload;
     size_t payload_size;
