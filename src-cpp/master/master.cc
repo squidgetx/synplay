@@ -36,8 +36,8 @@ void Master::send_timesync(){
   }
 }
 
-    template <typename WriteHandler>
-asio::deadline_timer *Master::start_timer(asio::ip::udp::endpoint& remote_endpt, int16_t attempt, WriteHandler handler){
+template <typename WriteHandler>
+asio::deadline_timer* Master::start_timer(asio::ip::udp::endpoint& remote_endpt, int16_t attempt, WriteHandler handler){
   // register timeout
   asio::deadline_timer *timer = new asio::deadline_timer(io_service);
   timer->expires_from_now(boost::posix_time::seconds(1));
