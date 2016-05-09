@@ -22,17 +22,11 @@
 
 using asio::ip::udp;
 
-typedef enum {
-  STOPPED = 0,
-  STARTED = 1
-} PaStreamState;
-
 typedef struct streamState {
   std::deque<int16_t> * play_buffer;
-  PaTime start_t;
-  PaStreamState state;
+  PaTime last_timestamp;
   std::deque<MPacket*> * packet_buffer;
-  streamState(int int_size) : start_t(0), state(STOPPED) {
+  streamState(int int_size) : last_timestamp(0) {
     play_buffer = new std::deque<int16_t>(int_size);
     packet_buffer = new std::deque<MPacket *>();
   };
