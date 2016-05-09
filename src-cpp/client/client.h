@@ -14,7 +14,7 @@
 #include "net/packet.h"
 #include "util/constants.h"
 
-#define LEN 4096 
+#define LEN 4096
 // ^^ This should be approx 2x the size of util/constants::SAMPLES_PER_PACKET
 // since master buffer size is in shorts (2 bytes)
 
@@ -43,6 +43,11 @@ class Client {
     void receive();
     void receive_data(MPacket *mpacket);
     void receive_timesync(TPacket *tpacket, mtime_t to_recvd);
+
+    // The averaged offset between the master and the client.
+    mtime_offset_t avg_offset = 0;
+    // The number of offset values averaged into avg_offset.
+    uint32_t avg_rounds = 0;
 
     uint16_t port;
     udp::socket socket;

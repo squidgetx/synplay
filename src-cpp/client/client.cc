@@ -40,14 +40,14 @@ static int pacallback(const void *inputBuffer, void* outputBuffer,
       s_state->last_timestamp = mp->get_pa_timestamp();
     }
 
-    
+
     // Don't play if it's not time to play this packet yet
     if (mp->get_pa_timestamp() >= play_time) {
       *(audio_out++) = 0;
       *(audio_out++) = 0;
       continue;
     }
-    
+
     // Get the next packet if this one is finished
     if (mp->remaining() < 2) {
       packet_buffer->pop_front();
@@ -112,7 +112,11 @@ void Client::receive_timesync(TPacket *tpacket, mtime_t to_recvd) {
 
   if (tpacket->tp_type == COMPLETE) {
     offset = tpacket->offset;
-    std::cerr << "setting master/client offset: " << offset << std::endl;
+    avg_offset += offset;
+    avg_rounds += 1;
+  } else if (tpacket->tp_type == FINAL) {
+    std::cerr << "setting master/client offset: " << offset << "after " <<
+      avg_rounds << " rounds" << std::endl;
     // Get offset between stream time and current time
     PaTime pa_start_time = Pa_GetStreamTime(stream);
     std::cerr << "Stream time: " << pa_start_time << std::endl;
@@ -120,6 +124,9 @@ void Client::receive_timesync(TPacket *tpacket, mtime_t to_recvd) {
     std::cerr << "System time: " << system_start_time << std::endl;
     pa_offset = ((mtime_t) (pa_start_time * 1000)) - system_start_time;
     std::cerr << "pa_offset: " << pa_offset << std::endl;
+    offset = avg_offset / avg_rounds;
+    avg_offset = 0;
+    avg_rounds = 0;
   }
 
   // and send the reply
@@ -129,10 +136,9 @@ void Client::receive_timesync(TPacket *tpacket, mtime_t to_recvd) {
       // reply sent
     }
   );
-  
 }
 
-Client::Client(asio::io_service& io_service, uint16_t p) : port(p), 
+Client::Client(asio::io_service& io_service, uint16_t p) : port(p),
   socket(io_service, udp::endpoint(udp::v4(), p)) {
   std::cout << "Listening on " << port << std::endl;
   s_state = new streamState(100);
