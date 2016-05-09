@@ -12,8 +12,6 @@
 #include "util/syntime.h"
 #include "util/assert.h"
 
-
-
 using namespace std;
 using namespace asio::ip;
 
@@ -135,9 +133,9 @@ void Master::send_data(){
     return;
   }
 
-  mtime_t time = stream_start + PACKET_TIME_MS;
+  stream_start = stream_start + PACKET_TIME_MS;
   n_frames_sent += FRAMES_PER_PACKET;
-  MPacket mp(time, data_buffer, SAMPLES_PER_PACKET);
+  MPacket mp(stream_start, data_buffer, SAMPLES_PER_PACKET);
   std::cerr << "sending ";
   mp.print();
 
