@@ -36,7 +36,7 @@ Master::~Master(){
 
 
 void Master::receive_everything() {
-  std::shared_ptr<udp::endpoint> remote_endpt = std::shared_ptr<udp::endpoint>();
+  std::shared_ptr<udp::endpoint> remote_endpt = std::make_shared<udp::endpoint>();
   socket.async_receive_from(
       asio::buffer(this->tp_buffer, TP_BUFFER_SIZE), *remote_endpt,
       [this,remote_endpt](error_code e, size_t bytes_recvd) {
