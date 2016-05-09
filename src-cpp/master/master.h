@@ -32,10 +32,10 @@ class Master
 
     std::unordered_map<asio::ip::udp::endpoint, MConnection,
       std::size_t (*) (const asio::ip::udp::endpoint&)> connections;
-    
+
     static std::size_t get_hash(const asio::ip::udp::endpoint& endpt) {
       std::ostringstream stream;
-      stream << endpoint;
+      stream << endpt;
       std::hash<std::string> hasher;
       return hasher(stream.str());
     }
@@ -57,21 +57,18 @@ class Master
 
     bool isDone = false;
 
-    void send_data(std::shared_ptr<asio::ip::udp::endpoint> remote_endpt, asio::const_buffer& buf);
+    void send_data(const asio::ip::udp::endpoint& remote_endpt, asio::const_buffer& buf);
     void send_data();
 
     void send_timesync();
 
-    void send_initial_timesync(std::shared_ptr<asio::ip::udp::endpoint> remote_endpt, MConnection &cxn);
-    void send_final_timesync(asio::ip::udp::endpoint& remote_endpt, TPacket *tp, int16_t attempt = 0);
-
-    void receive_initial_timesync_reply(asio::ip::udp::endpoint& remote_endpt, int16_t attempt);
-    void receive_final_timesync_reply(asio::ip::udp::endpoint& remote_endpt, TPacket *tp, int16_t attempt);
+    void send_initial_timesync(const asio::ip::udp::endpoint& remote_endpt, MConnection &cxn);
+    void send_final_timesync(const asio::ip::udp::endpoint& remote_endpt, TPacket *tp, MConnection &cxn);
 
     void receive_everything();
 
     template <typename WriteHandler>
-asio::deadline_timer *start_timer(asio::ip::udp::endpoint& remote_endpt, int16_t attempt, WriteHandler handler);
+    asio::deadline_timer* start_timer(const asio::ip::udp::endpoint& remote_endpt, WriteHandler handler);
 };
 
 #endif
