@@ -54,7 +54,7 @@ class Master
 
     void send_timesync();
 
-    void send_initial_timesync(asio::ip::udp::endpoint& remote_endpt, int16_t attempt = 0);
+    void send_initial_timesync(std::shared_ptr<asio::ip::udp::endpoint> remote_endpt, MConnection &cxn);
     void send_final_timesync(asio::ip::udp::endpoint& remote_endpt, TPacket *tp, int16_t attempt = 0);
 
     void receive_initial_timesync_reply(asio::ip::udp::endpoint& remote_endpt, int16_t attempt);
