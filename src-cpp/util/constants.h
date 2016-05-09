@@ -10,4 +10,8 @@
 #define SAMPLES_PER_PACKET (FRAMES_PER_PACKET * CHANNELS)
 #define SHORTS_PER_PACKET SAMPLES_PER_PACKET
 
+#define SEND_SPEED_FACTOR (2)
+// How fast to send packets; if this = 2 for instance then we 
+// send packets twice as fast as the rate of song audio
+
 #endif
