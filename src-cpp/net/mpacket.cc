@@ -6,6 +6,7 @@ MPacket::MPacket(mtime_t time, int16_t* p, size_t ps) : timestamp(time),
   payload(p), payload_size(ps), Packet::Packet(PacketType::DATA) {
 
     pa_timestamp = 0;
+    play_head = 0;
     
 }
 
@@ -50,7 +51,7 @@ asio::const_buffer MPacket::pack() const {
 MPacket * MPacket::unpack(uint8_t* p, std::size_t size) {
   ByteBuffer buf(p, size);
   mtime_t timestamp = 0;
-  int16_t * payload = new int16_t[PACKET_SIZE];
+  int16_t * payload = new int16_t[PACKET_SHORT_SIZE];
   buf.get_unsigned_long(&timestamp);
   size_t payload_size = buf.remaining() / sizeof(int16_t);
   buf.get_nshorts(payload, payload_size);
@@ -58,7 +59,7 @@ MPacket * MPacket::unpack(uint8_t* p, std::size_t size) {
 }
 
 void MPacket::print() {
-  std::cout << "<MPacket timestamp: " << timestamp << " payload size: " << payload_size << ">" << std::endl;
+  std::cout << "<MPacket timestamp: " << timestamp << " payload size: " << payload_size << " PaTime: " << pa_timestamp << ">" << std::endl;
 }
 
 void MPacket::print_all() {
