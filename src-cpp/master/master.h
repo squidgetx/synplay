@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <memory>
 #include <unordered_map>
 
 #include "asio.hpp"
@@ -12,6 +13,7 @@
 #include "net/time_packet.h"
 #include <sndfile.hh>
 #include "util/constants.h"
+#include "master/mconnection.h"
 
 #define TP_BUFFER_SIZE (2 + 5 * 8)
 
@@ -25,11 +27,10 @@ class Master
 
   private:
     asio::io_service io_service;
-    std::vector<asio::ip::udp::endpoint> remote_endpts;
     asio::ip::udp::socket socket;
     SndfileHandle file;
 
-    std::vector<uint64_t> packet_count;
+    std::unordered_map<std::shared_ptr<asio::ip::udp::endpoint>, MConnection> connections;
 
     // Audio sampling parameters
     // The initial offset from the master time to use for the clients.
@@ -48,11 +49,11 @@ class Master
 
     bool isDone = false;
 
-    void send_data(asio::ip::udp::endpoint& remote_endpt, asio::const_buffer& buf, /* debugging */ uint64_t &sent);
+    void send_data(std::shared_ptr<asio::ip::udp::endpoint> remote_endpt, asio::const_buffer& buf);
     void send_data();
 
     void send_timesync();
-    
+
     void send_initial_timesync(asio::ip::udp::endpoint& remote_endpt, int16_t attempt = 0);
     void send_final_timesync(asio::ip::udp::endpoint& remote_endpt, TPacket *tp, int16_t attempt = 0);
 

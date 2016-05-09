@@ -4,6 +4,7 @@
 #include <chrono>
 #include <string>
 #include <thread>
+#include <memory>
 
 #include "master/master.h"
 #include "net/packet.h"
@@ -15,11 +16,14 @@
 using namespace std;
 using namespace asio::ip;
 
-Master::Master(string& fname,vector<udp::endpoint>& r_endpts) :
-  remote_endpts(r_endpts), io_service(), socket(io_service,udp::endpoint(udp::v4(),0)), synced(0), outstanding_packets(0)
+Master::Master(string& fname, vector<udp::endpoint>& r_endpts) :
+  io_service(), socket(io_service,udp::endpoint(udp::v4(),0)), synced(0), outstanding_packets(0)
 {
+  for (auto &endpoint : r_endpts) {
+    connections.insert({std::make_shared<udp::endpoint>(endpoint),{}});
+  }
+
   file = SndfileHandle (fname);
-  packet_count = {r_endpts.size(), 0};
 
   std::cerr << "Opened file '" << fname << "'" << std::endl;
   std::cerr << "\tSample rate '" << file.samplerate() << "'" << std::endl;
@@ -31,8 +35,8 @@ Master::~Master(){
 
 // send a timesync to every remote endpoint.
 void Master::send_timesync(){
-  for (udp::endpoint& remote_endpt : remote_endpts) {
-    send_initial_timesync(remote_endpt);
+  for (auto& kv : connections) {
+    send_initial_timesync(kv);
   }
 }
 
@@ -136,12 +140,11 @@ void Master::receive_final_timesync_reply(asio::ip::udp::endpoint& remote_endpt,
 }
 
 
-void Master::send_data(udp::endpoint& remote_endpt, asio::const_buffer& buf, /* debug packet counts */ uint64_t &sent){
-  socket.async_send_to(asio::buffer(buf),remote_endpt,
-    [this,&sent](error_code ec, size_t /*bytes_sent*/){
+void Master::send_data(std::shared_ptr<udp::endpoint> remote_endpt, asio::const_buffer& buf){
+  socket.async_send_to(asio::buffer(buf), *remote_endpt.get(),
+    [this](error_code ec, size_t /*bytes_sent*/){
       // QUESTION: this sends more to everyone in the callback for
       // one successful sent packet... what to do instead?
-        sent++;
         if (ec){
             cerr << ec.message() << endl;
         } else if (--this->outstanding_packets == 0) {
@@ -153,7 +156,7 @@ void Master::send_data(udp::endpoint& remote_endpt, asio::const_buffer& buf, /* 
 }
 
 void Master::send_data(){
-  outstanding_packets = remote_endpts.size();
+  outstanding_packets = connections.size();
 
   if (stream_start == 0) {
     stream_start = get_millisecond_time() + STREAM_OFFSET;
@@ -174,8 +177,8 @@ void Master::send_data(){
 
   asio::const_buffer mp_buf = mp.pack();
 
-  for (auto&& it = remote_endpts.begin(); it < remote_endpts.end(); it++) {
-    send_data(*it, mp_buf, packet_count[std::distance(remote_endpts.begin(), it)]);
+  for (auto& it : connections) {
+    send_data(it.first, mp_buf);
   }
 }
 
@@ -184,10 +187,4 @@ void Master::run(){
 
   while (!isDone)
     io_service.run();
-
-  std::cerr << "Packet counts" << std::endl;
-  for (auto&& it = remote_endpts.begin(); it < remote_endpts.end(); it++) {
-    std::cerr << *it << " " <<
-      packet_count[std::distance(remote_endpts.begin(), it)] << std::endl;
-  }
 }
