@@ -44,7 +44,7 @@ asio::deadline_timer *Master::start_timer(asio::ip::udp::endpoint& remote_endpt,
   timer->async_wait([this,&remote_endpt,handler](const std::error_code& error){
     if (!error){
       cerr << "timeout: " << remote_endpt << endl;
-      handler(); 
+      handler();
     }
   });
   return timer;
@@ -70,7 +70,7 @@ void Master::send_initial_timesync(udp::endpoint& remote_endpt, int16_t attempt)
 }
 
 void Master::receive_initial_timesync_reply(udp::endpoint& remote_endpt, int16_t attempt) {
-  
+
   asio::deadline_timer *timer = this->start_timer(remote_endpt, attempt, [this,&remote_endpt,attempt](){
       this->send_initial_timesync(remote_endpt, attempt + 1);
     });
@@ -81,7 +81,7 @@ void Master::receive_initial_timesync_reply(udp::endpoint& remote_endpt, int16_t
         // calculate sum shit
         timer->cancel();
         delete timer;
-        
+
         // immediately grab the receipt time
         mtime_t from_recv = get_millisecond_time();
         // unpack the time packet
@@ -94,7 +94,7 @@ void Master::receive_initial_timesync_reply(udp::endpoint& remote_endpt, int16_t
         // calculate the offset
         mtime_offset_t offset = ((static_cast<mtime_offset_t> (tp->to_recvd) - static_cast<mtime_offset_t> (tp->from_sent)) + (static_cast<mtime_offset_t> (tp->to_sent) - static_cast<mtime_offset_t> (tp->from_recvd)))/2;
         tp->offset = offset;
-        
+
         // attempt to send the final timesync (with the offset calculated).
         this->send_final_timesync(remote_endpt,tp);
       }
