@@ -44,7 +44,19 @@ void Master::send_timesync(){
   }
 }
 
+static void timeout_handler(const std::error_code& error){
+  if (!error){
+    cerr << "timeout" << endl;
+  }
+}
+
 void Master::receive_timesync_reply(udp::endpoint& remote_endpt) {
+  
+  // register timeout
+  asio::deadline_timer timer(io_service);
+  timer.expires_from_now(boost::posix_time::seconds(1));
+  timer.async_wait(timeout_handler);
+
   socket.async_receive_from(
       asio::buffer(this->tp_buffer, TP_BUFFER_SIZE), remote_endpt,
       [this,&remote_endpt](error_code e, size_t bytes_recvd){
