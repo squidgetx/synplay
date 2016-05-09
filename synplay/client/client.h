@@ -5,9 +5,11 @@
 #include <cstdlib>
 #include <system_error>
 #include <deque>
+
 #include <asio.hpp>
 #include <portaudio.h>
 #include <sndfile.hh>
+
 #include "util/ringbuf.h"
 #include "net/mpacket.h"
 #include "net/time_packet.h"
@@ -44,10 +46,9 @@ class Client {
     void receive_data(MPacket *mpacket);
     void receive_timesync(TPacket *tpacket, mtime_t to_recvd);
 
-    // The averaged offset between the master and the client.
-    mtime_offset_t avg_offset = 0;
-    // The number of offset values averaged into avg_offset.
-    uint32_t avg_rounds = 0;
+    static constexpr double OUTLIER_THRESHOLD = 2.0;
+    // The offset samples between the master and the client.
+    std::deque<double> offset_samples;
 
     uint16_t port;
     udp::socket socket;

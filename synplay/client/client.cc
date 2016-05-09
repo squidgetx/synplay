@@ -1,7 +1,14 @@
 #include "client.h"
+
+#include <cmath>
+#include <deque>
+#include <algorithm>
+
 #include <sndfile.hh>
+
 #include "net/time_packet.h"
 #include "util/syntime.h"
+#include "util/math.h"
 
 static int received = 0;
 
@@ -113,8 +120,7 @@ void Client::receive_timesync(TPacket *tpacket, mtime_t to_recvd) {
   if (tpacket->tp_type == COMPLETE || tpacket->tp_type == FINAL) {
     offset = tpacket->offset;
     std::cerr << "recieved offset " << offset << std::endl;
-    avg_offset += offset;
-    avg_rounds += 1;
+    offset_samples.push_back(offset);
   }
 
   if (tpacket->tp_type == FINAL) {
@@ -125,11 +131,26 @@ void Client::receive_timesync(TPacket *tpacket, mtime_t to_recvd) {
     std::cerr << "System time: " << system_start_time << std::endl;
     pa_offset = ((mtime_t) (pa_start_time * 1000)) - system_start_time;
     std::cerr << "pa_offset: " << pa_offset << std::endl;
-    offset = avg_offset / avg_rounds;
+
+    // Apply outlier detection to NTP samples.
+    std::pair<double, double> mean_stddev = calculate_mean_stddev(offset_samples);
+    double mean = mean_stddev.first;
+    double stddev = mean_stddev.second;
+    std::vector<double> cleaned_samples(offset_samples.size());
+    // Throw out any samples that are more than OUTLIER_THRESHOLD away from the
+    // mean
+    auto end = std::copy_if(offset_samples.begin(), offset_samples.end(),
+        cleaned_samples.begin(), [mean, stddev](double value) {
+          return stddev == 0 || fabs(value - mean) < OUTLIER_THRESHOLD*stddev;
+        });
+    std::size_t n_samples = std::distance(cleaned_samples.begin(), end);
+    mean = std::accumulate(cleaned_samples.begin(), end, 0.0) / n_samples;
+    if (n_samples)
+      offset = mean / n_samples;
+
     std::cerr << "setting master/client offset: " << offset << " after " <<
-      avg_rounds << " rounds" << std::endl;
-    avg_offset = 0;
-    avg_rounds = 0;
+      offset_samples.size() << " rounds" << std::endl;
+    offset_samples.clear();
   }
 
   // and send the reply
