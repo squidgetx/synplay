@@ -136,6 +136,7 @@ void Client::receive_timesync(TPacket *tpacket, mtime_t to_recvd) {
     std::pair<double, double> mean_stddev = calculate_mean_stddev(offset_samples);
     double mean = mean_stddev.first;
     double stddev = mean_stddev.second;
+    std::cerr << "sample mean: " << mean " and std dev: " << stddev << std::endl;
     std::vector<double> cleaned_samples(offset_samples.size());
     // Throw out any samples that are more than OUTLIER_THRESHOLD away from the
     // mean
@@ -143,13 +144,16 @@ void Client::receive_timesync(TPacket *tpacket, mtime_t to_recvd) {
         cleaned_samples.begin(), [mean, stddev](double value) {
           return stddev == 0 || fabs(value - mean) < OUTLIER_THRESHOLD*stddev;
         });
+
     std::size_t n_samples = std::distance(cleaned_samples.begin(), end);
     mean = std::accumulate(cleaned_samples.begin(), end, 0.0) / n_samples;
-    if (n_samples)
+    if (n_samples) {
       offset = mean / n_samples;
+    }
 
     std::cerr << "setting master/client offset: " << offset << " after " <<
-      offset_samples.size() << " rounds" << std::endl;
+      offset_samples.size() << " rounds. used " << n_samples << " samples."
+      << std::endl;
     offset_samples.clear();
   }
 
