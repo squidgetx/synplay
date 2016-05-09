@@ -1,4 +1,9 @@
 #include "asio.hpp"
+#include <sndfile.hh>
+
+#include <chrono>
+#include <string>
+#include <thread>
 
 #include "master/master.h"
 #include "net/packet.h"
@@ -7,9 +12,7 @@
 #include "util/syntime.h"
 #include "util/assert.h"
 
-#include <string>
 
-#include <sndfile.hh>
 
 using namespace std;
 using namespace asio::ip;
@@ -90,6 +93,7 @@ void Master::send_data(udp::endpoint& remote_endpt, asio::const_buffer& buf, /* 
         if (ec){
             cerr << ec.message() << endl;
         } else if (--this->outstanding_packets == 0) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(2));
             this->send_data();
         }
     });

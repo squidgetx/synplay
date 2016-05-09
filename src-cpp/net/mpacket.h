@@ -33,7 +33,7 @@ class MPacket : public Packet {
     int remaining();
 
     // Frames per packet (10ms audio)
-    static constexpr std::size_t FRAMES_PER_PACKET = 441;
+    static constexpr std::size_t FRAMES_PER_PACKET = 221;
     static constexpr std::size_t FRAME_SIZE = sizeof(int16_t)*2;
     static constexpr std::size_t BUFFER_SIZE = FRAMES_PER_PACKET*FRAME_SIZE + sizeof(mtime_t) + sizeof(uint8_t);
 
