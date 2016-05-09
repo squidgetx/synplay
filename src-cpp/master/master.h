@@ -30,7 +30,15 @@ class Master
     asio::ip::udp::socket socket;
     SndfileHandle file;
 
-    std::unordered_map<std::shared_ptr<asio::ip::udp::endpoint>, MConnection> connections;
+    std::unordered_map<asio::ip::udp::endpoint, MConnection,
+      std::size_t (*) (const asio::ip::udp::endpoint&)> connections;
+    
+    static std::size_t get_hash(const asio::ip::udp::endpoint& endpt) {
+      std::ostringstream stream;
+      stream << endpoint;
+      std::hash<std::string> hasher;
+      return hasher(stream.str());
+    }
 
     // Audio sampling parameters
     // The initial offset from the master time to use for the clients.

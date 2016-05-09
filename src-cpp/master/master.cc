@@ -19,6 +19,8 @@ using namespace asio::ip;
 Master::Master(string& fname, vector<udp::endpoint>& r_endpts) :
   io_service(), socket(io_service,udp::endpoint(udp::v4(),0)), synced(0), outstanding_packets(0)
 {
+  connections(0, get_hash);
+
   for (auto &endpoint : r_endpts) {
     connections.insert({std::make_shared<udp::endpoint>(endpoint),{}});
   }
@@ -32,6 +34,8 @@ Master::Master(string& fname, vector<udp::endpoint>& r_endpts) :
 
 Master::~Master(){
 }
+
+
 
 void Master::receive_everything() {
   std::shared_ptr<udp::endpoint> remote_endpt = std::shared_ptr<udp::endpoint>();
