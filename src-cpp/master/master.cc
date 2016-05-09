@@ -164,6 +164,9 @@ void Master::send_initial_timesync(const udp::endpoint& remote_endpt, MConnectio
 
   if (cxn.attempts > 2) {
     cerr << "send_initial_timesync give up on: " << remote_endpt << endl;
+    timer->cancel();
+    delete timer;
+    cxn.timer = NULL;
     return;
   } else {
     cerr << "send_initial_timesync remote_endpt = " << remote_endpt << ", attempt = " << cxn.attempts << endl;
@@ -194,12 +197,20 @@ void Master::send_final_timesync(const asio::ip::udp::endpoint& remote_endpt, TP
 
     if (cxn.attempts > 2){
       cerr << "send_final_timesync give up on: " << remote_endpt << endl;
+      timer->cancel();
+      delete timer;
+      cxn.timer = NULL;
       return;
     } else {
       cerr << "send_final_timesync remote_endpt = " << remote_endpt << ", attempt = " << cxn.attempts << endl;
     }
 
     cxn.attempts++;
+
+    if (cxn.sync_rounds + 1 == NTP_ROUNDS) {
+      tp->tp_type = FINAL;
+    }
+    tp->print();
 
     // and send the reply
     socket.async_send_to(
