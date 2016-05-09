@@ -31,7 +31,29 @@ Master::Master(string& fname,vector<udp::endpoint>& r_endpts) :
 Master::~Master(){
 }
 
-void Master::send_timesync(udp::endpoint& remote_endpt, int16_t attempt) {
+// send a timesync to every remote endpoint.
+void Master::send_timesync(){
+  for (udp::endpoint& remote_endpt : remote_endpts) {
+    send_initial_timesync(remote_endpt);
+  }
+}
+
+template<typename WaitHandler>
+asio::deadline_timer *Master::start_timer(udp::endpoint& remote_endpt, int16_t attempt, WaitHandler handler){
+  // register timeout
+  asio::deadline_timer *timer = new asio::deadline_timer(io_service);
+  timer->expires_from_now(boost::posix_time::seconds(1));
+  timer->async_wait([this,&remote_endpt,&handler](const std::error_code& error){
+    if (!error){
+      cerr << "timeout: " << remote_endpt << endl;
+      handler(); 
+    }
+  });
+  return timer;
+}
+
+
+void Master::send_initial_timesync(udp::endpoint& remote_endpt, int16_t attempt) {
 
   cerr << "send_timesync remote_endpt = " << remote_endpt << ", attempt = " << attempt << endl;
 
@@ -45,28 +67,15 @@ void Master::send_timesync(udp::endpoint& remote_endpt, int16_t attempt) {
 
   socket.async_send_to(asio::buffer(tp.pack()),remote_endpt,
       [this,&remote_endpt,attempt](error_code,size_t) {
-          this->receive_timesync_reply(remote_endpt,attempt);
+          this->receive_initial_timesync_reply(remote_endpt,attempt);
       });
 }
 
-// send a timesync to every remote endpoint.
-void Master::send_timesync(){
-  for (udp::endpoint& remote_endpt : remote_endpts) {
-    send_timesync(remote_endpt);
-  }
-}
-
-void Master::receive_timesync_reply(udp::endpoint& remote_endpt, int16_t attempt) {
+void Master::receive_initial_timesync_reply(udp::endpoint& remote_endpt, int16_t attempt) {
   
-  // register timeout
-  asio::deadline_timer *timer = new asio::deadline_timer(io_service);
-  timer->expires_from_now(boost::posix_time::seconds(1));
-  timer->async_wait([this,&remote_endpt,attempt](const std::error_code& error){
-    if (!error){
-      cerr << "timeout: " << remote_endpt << endl;
-      this->send_timesync(remote_endpt, attempt + 1);
-    }
-  });
+  asio::deadline_timer *timer = this->start_timer(remote_endpt, attempt, [this,&remote_endpt,attempt](){
+      this->send_initial_timesync(remote_endpt, attempt + 1);
+    });
 
   socket.async_receive_from(
       asio::buffer(this->tp_buffer, TP_BUFFER_SIZE), remote_endpt,
@@ -87,23 +96,37 @@ void Master::receive_timesync_reply(udp::endpoint& remote_endpt, int16_t attempt
         // calculate the offset
         mtime_offset_t offset = ((static_cast<mtime_offset_t> (tp->to_recvd) - static_cast<mtime_offset_t> (tp->from_sent)) + (static_cast<mtime_offset_t> (tp->to_sent) - static_cast<mtime_offset_t> (tp->from_recvd)))/2;
         tp->offset = offset;
-
-        // and send the reply
-        socket.async_send_to(
-            asio::buffer(tp->pack()), remote_endpt,
-            [this](error_code, size_t) {
-              // reply sent...
-              // do we need timeouts on this shit
-            }
-        );
-
-        // ready to start sending data
-        if ((this->synced += 1) == remote_endpts.size()){
-            this->send_data();
-        }
+        
+        this->send_final_timesync(remote_endpt,tp);
       }
   );
 }
+
+void Master::send_final_timesync(asio::ip::udp::endpoint& remote_endpt, TPacket *tp, int16_t attempt){
+  // and send the reply
+  socket.async_send_to(
+      asio::buffer(tp->pack()), remote_endpt,
+      [this,&remote_endpt,tp,attempt](error_code, size_t) {
+        // reply sent...
+        // do we need timeouts on this shit
+        this->receive_final_timesync_reply(remote_endpt,tp,attempt);
+      }
+    );
+}
+
+void Master::receive_final_timesync_reply(asio::ip::udp::endpoint& remote_endpt, TPacket *tp, int16_t attempt){
+  asio::deadline_timer *timer = this->start_timer(remote_endpt, attempt, [this,&remote_endpt,tp,attempt](){
+      this->send_final_timesync(remote_endpt, tp, attempt + 1);
+    });
+
+  socket.async_receive_from(
+      asio::buffer(this->tp_buffer, TP_BUFFER_SIZE), remote_endpt,
+      [this,&remote_endpt,timer](error_code e, size_t bytes_recvd){
+          timer->cancel();
+          delete timer;
+      });
+}
+
 
 void Master::send_data(udp::endpoint& remote_endpt, asio::const_buffer& buf, /* debug packet counts */ uint64_t &sent){
   socket.async_send_to(asio::buffer(buf),remote_endpt,
