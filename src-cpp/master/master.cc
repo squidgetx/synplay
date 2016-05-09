@@ -93,7 +93,7 @@ void Master::send_data(udp::endpoint& remote_endpt, asio::const_buffer& buf, /* 
         if (ec){
             cerr << ec.message() << endl;
         } else if (--this->outstanding_packets == 0) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(2));
+            std::this_thread::sleep_for(std::chrono::milliseconds(3));
             this->send_data();
         }
     });
