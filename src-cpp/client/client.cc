@@ -98,44 +98,37 @@ void Client::receive() {
 }
 
 void Client::receive_data(MPacket *mpacket) {
-        received++;
-        //printf("%d\r", received);
-        //s_state->play_buffer->insert(s_state->play_buffer->end(), mpacket->get_payload(), mpacket->get_payload() + mpacket->get_payload_size());
-        mpacket->set_pa_timestamp(get_pa_time(mpacket->get_timestamp()));
-        s_state->packet_buffer->push_back(mpacket);
-      //  mpacket->print();
+  received++;
+  // printf("%d\r", received);
+  mpacket->set_pa_timestamp(get_pa_time(mpacket->get_timestamp()));
+  s_state->packet_buffer->push_back(mpacket);
+  // mpacket->print();
 
-        /*
-        if (s_state->start_t == 0) {
-          // convert this to stream time
-          s_state->start_t  = get_pa_time(mpacket->get_timestamp());
-          std::cerr << "Start_t set to " << s_state->start_t << std::endl;
-        }*/
 }
 
 void Client::receive_timesync(TPacket *tpacket, mtime_t to_recvd) {
-        tpacket->to_recvd = to_recvd;
-        tpacket->to_sent = get_millisecond_time();
+  tpacket->to_recvd = to_recvd;
+  tpacket->to_sent = get_millisecond_time();
 
-        if (tpacket->tp_type == COMPLETE) {
-          offset = tpacket->offset;
-          std::cerr << "setting master/client offset: " << offset << std::endl;
-          // Get offset between stream time and current time
-          PaTime pa_start_time = Pa_GetStreamTime(stream);
-          std::cerr << "Stream time: " << pa_start_time << std::endl;
-          mtime_t system_start_time = get_millisecond_time();
-          std::cerr << "System time: " << system_start_time << std::endl;
-          pa_offset = ((mtime_t) (pa_start_time * 1000)) - system_start_time;
-          std::cerr << "pa_offset: " << pa_offset << std::endl;
-        } else {
-          // and send the reply
-          socket.async_send_to(
-              asio::buffer(tpacket->pack()), sender_endpoint,
-              [this](std::error_code, std::size_t) {
-                // reply sent
-              }
-          );
+  if (tpacket->tp_type == COMPLETE) {
+    offset = tpacket->offset;
+    std::cerr << "setting master/client offset: " << offset << std::endl;
+    // Get offset between stream time and current time
+    PaTime pa_start_time = Pa_GetStreamTime(stream);
+    std::cerr << "Stream time: " << pa_start_time << std::endl;
+    mtime_t system_start_time = get_millisecond_time();
+    std::cerr << "System time: " << system_start_time << std::endl;
+    pa_offset = ((mtime_t) (pa_start_time * 1000)) - system_start_time;
+    std::cerr << "pa_offset: " << pa_offset << std::endl;
+  } else {
+    // and send the reply
+    socket.async_send_to(
+        asio::buffer(tpacket->pack()), sender_endpoint,
+        [this](std::error_code, std::size_t) {
+          // reply sent
         }
+    );
+  }
 }
 
 Client::Client(asio::io_service& io_service, uint16_t p) : port(p), 
@@ -202,11 +195,7 @@ void Client::start() {
 
   Pa_Sleep(1000);
 
-  receive();//FromFile();
-
-
-   // when we receive a timestamp, add pa_offset then convert to PaTime
-
+  receive();
 
   //for (;;) {}
   //Pa_StopStream(stream);
