@@ -35,7 +35,7 @@ Master::~Master(){
 
 void Master::receive_everything() {
 
-  std::shared_ptr<udp::endpoint> remote_endpt = std::shared_ptr<upd::endpoint>();
+  std::shared_ptr<udp::endpoint> remote_endpt = std::shared_ptr<udp::endpoint>();
   socket.async_receive_from(
       asio::buffer(this->tp_buffer, TP_BUFFER_SIZE), *remote_endpt,
       [this,remote_endpt](error_code e, size_t bytes_recvd){
@@ -49,25 +49,25 @@ void Master::receive_everything() {
         TPacket * tp = static_cast<TPacket *> (p);
 
         // Demultiplex
-        MConnection cxn = connections[remote_endpt];
+        MConnection &cxn = connections[remote_endpt];
 
         // Cancel the timer, if any
-        if (cxn->timer != nullptr) {
-          cxn->timer->cancel();
-          delete cxn->timer;
-          cxn->timer = nullptr;
+        if (cxn.timer != nullptr) {
+          cxn.timer->cancel();
+          delete cxn.timer;
+          cxn.timer = nullptr;
         }
 
         // Reset attempts
-        cxn->attempts = 0;
+        cxn.attempts = 0;
 
         bool continueReceive = true;
 
-        switch (cxn->state) {
-          case NAKED:
+        switch (cxn.state) {
+          case MConnection::NAKED:
             // No one should send to us
             break;
-          case SENT_INITIAL_TIMESYNC: 
+          case MConnection::SENT_INITIAL_TIMESYNC: 
             // Got the reply to the initial timesync
             tp->from_recvd = from_recv;
             tp->tp_type = COMPLETE;
@@ -80,32 +80,31 @@ void Master::receive_everything() {
 
             this->send_final_timesync(remote_endpt, tp, cxn);
             break;
-          case SENT_FINAL_TIMESYNC:
+          case MConnection::SENT_FINAL_TIMESYNC:
             // Got the reply to the final timesync
-            cxn->state = PENDING_ALL_SYNCED;
+            cxn->state = MConnection::PENDING_ALL_SYNCED;
             synced++;
             if (synced == connections.size()) {
               // All cxns are pending all synced!
               for (auto& kv : connections) {
                 // Sanity check: make sure that all the states are indeed
                 // PENDING_ALL_SYNCED
-                check_or_die(kv.second.state == PENDING_ALL_SYNCED);
-                kv.second.state = SENDING_DATA;
+                check_or_die(kv.second.state == MConnection::PENDING_ALL_SYNCED);
+                kv.second.state = MConnection::SENDING_DATA;
               }
               sendData();
               continueReceive = false;
             }
             break;
-          case PENDING_ALL_SYNCED:
+          case MConnection::PENDING_ALL_SYNCED:
             // Shouldn't be getting any packets in this state
             break;
-          case SENDING_DATA:
+          case MConnection::SENDING_DATA:
             // Shouldn't be getting any packets in this state
             break;
           default:
             // Shouldn't be getting any packets in this state
             break;
-
         }
         if (continueReceive) 
           receive_everything();
@@ -138,7 +137,7 @@ void Master::send_initial_timesync(std::shared_ptr<udp::endpoint> remote_endpt, 
 
   cxn.state = SENT_INITIAL_TIMESYNC;
 
-  asio::deadline_timer *timer = this->start_timer(remote_endpt, [this,&remote_endpt](){
+  asio::deadline_timer *timer = this->start_timer(remote_endpt, [this,&remote_endpt,&cxn](){
         this->send_initial_timesync(remote_endpt, cxn);
   });
 
@@ -163,7 +162,7 @@ void Master::send_initial_timesync(std::shared_ptr<udp::endpoint> remote_endpt, 
   socket.async_send_to(asio::buffer(tp.pack()), *remote_endpt, NULL);
 }
 
-void Master::send_final_timesync(asio::ip::udp::endpoint& remote_endpt, TPacket *tp, MConnection cxn){
+void Master::send_final_timesync(std::shared_ptr<asio::ip::udp::endpoint> remote_endpt, TPacket *tp, MConnection &cxn){
 
     cxn.state = SENT_FINAL_TIMESYNC;
     
