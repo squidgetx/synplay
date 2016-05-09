@@ -148,7 +148,7 @@ void Client::receive_timesync(TPacket *tpacket, mtime_t to_recvd) {
     std::size_t n_samples = std::distance(cleaned_samples.begin(), end);
     mean = std::accumulate(cleaned_samples.begin(), end, 0.0) / n_samples;
     if (n_samples) {
-      offset = mean / n_samples;
+      offset = mean;
     }
 
     std::cerr << "setting master/client offset: " << offset << " after " <<
