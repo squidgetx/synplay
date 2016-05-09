@@ -76,11 +76,11 @@ void Master::receive_everything() {
                 static_cast<mtime_offset_t> (tp->from_recvd)))/2;
             tp->offset = offset;
 
-            cxn->state = SENT_FINAL_TIMESYNC;
             this->send_final_timesync(remote_endpt, tp, cxn);
             break;
           case SENT_FINAL_TIMESYNC:
             // Got the reply to the final timesync
+            cxn->state = SENDING_DATA;
             break;
           case SENDING_DATA:
             // Shouldn't be getting any packets in this state
@@ -89,12 +89,8 @@ void Master::receive_everything() {
             break;
 
         }
-
+        receive_everything();
       }
-
-  // constantly listen for new packets
-  receive_everything();
-
 }
 
 // send a timesync to every remote endpoint.
@@ -120,6 +116,8 @@ asio::deadline_timer* Master::start_timer(asio::ip::udp::endpoint& remote_endpt,
 
 
 void Master::send_initial_timesync(std::shared_ptr<udp::endpoint> remote_endpt, MConnection &cxn) {
+
+  cxn.state = SENT_INITIAL_TIMESYNC;
 
   asio::deadline_timer *timer = this->start_timer(remote_endpt, [this,&remote_endpt](){
         this->send_initial_timesync(remote_endpt, cxn);
@@ -147,6 +145,8 @@ void Master::send_initial_timesync(std::shared_ptr<udp::endpoint> remote_endpt, 
 }
 
 void Master::send_final_timesync(asio::ip::udp::endpoint& remote_endpt, TPacket *tp, MConnection cxn){
+
+    cxn.state = SENT_FINAL_TIMESYNC;
     
     // Send the final timesync and start a timer
 
