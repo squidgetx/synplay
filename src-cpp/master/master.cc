@@ -45,7 +45,9 @@ void Master::send_timesync(){
 }
 
 static void timeout_handler(const std::error_code& error){
-  if (!error){
+  if (error){
+    cerr << error.message() << endl;
+  } else {
     cerr << "timeout" << endl;
   }
 }
@@ -53,9 +55,10 @@ static void timeout_handler(const std::error_code& error){
 void Master::receive_timesync_reply(udp::endpoint& remote_endpt) {
   
   // register timeout
-  asio::deadline_timer timer(io_service);
-  timer.expires_from_now(boost::posix_time::seconds(1));
-  timer.async_wait(timeout_handler);
+  asio::deadline_timer *timer = new asio::deadline_timer(io_service);
+  timer->expires_from_now(boost::posix_time::seconds(1));
+  timer->async_wait(timeout_handler);
+  timers.push_back(timer);
 
   socket.async_receive_from(
       asio::buffer(this->tp_buffer, TP_BUFFER_SIZE), remote_endpt,
