@@ -25,6 +25,9 @@ TPacket* TPacket::unpack(const uint8_t* buf, std::size_t size){
     case COMPLETE:
       type = COMPLETE;
       break;
+    case FINAL:
+      type = FINAL;
+      break;
     default:
       std::cerr << "Data corruption detected: Invalid TPacketType flag." << std::endl;
   }

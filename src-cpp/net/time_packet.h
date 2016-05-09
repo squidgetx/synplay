@@ -13,7 +13,8 @@ typedef int64_t mtime_offset_t;
 
 typedef enum {
   INCOMPLETE = 0,
-  COMPLETE = 1 // the offset field has been set.
+  COMPLETE = 1, // the offset field has been set.
+  FINAL = 2
 } TPacketType;
 
 class TPacket : public Packet {
