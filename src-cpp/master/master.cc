@@ -70,10 +70,10 @@ void Master::receive_everything() {
             // Got the reply to the initial timesync
             tp->from_recvd = from_recv;
             tp->tp_type = COMPLETE;
-            mtime_offset_t offset = 
-              ((static_cast<mtime_offset_t> (tp->to_recvd) - 
+            mtime_offset_t offset =
+              ((static_cast<mtime_offset_t> (tp->to_recvd) -
                 static_cast<mtime_offset_t> (tp->from_sent)) +
-               (static_cast<mtime_offset_t> (tp->to_sent) - 
+               (static_cast<mtime_offset_t> (tp->to_sent) -
                 static_cast<mtime_offset_t> (tp->from_recvd)))/2;
             tp->offset = offset;
 
