@@ -114,7 +114,7 @@ void Master::send_data(udp::endpoint& remote_endpt, asio::const_buffer& buf, /* 
         if (ec){
             cerr << ec.message() << endl;
         } else if (--this->outstanding_packets == 0) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(6));
+            std::this_thread::sleep_for(std::chrono::milliseconds(PACKET_TIME_MS / SEND_SPEED_FACTOR));
             this->send_data();
         }
     });
@@ -135,7 +135,7 @@ void Master::send_data(){
     return;
   }
 
-  mtime_t time = stream_start + (n_frames_sent * 1000) / SAMPLE_RATE;
+  mtime_t time = stream_start + PACKET_TIME_MS;
   n_frames_sent += FRAMES_PER_PACKET;
   MPacket mp(time, data_buffer, SAMPLES_PER_PACKET);
   std::cerr << "sending ";
