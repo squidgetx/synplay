@@ -1,6 +1,6 @@
 CXX=g++
 OFLAG=-O3
-CXXFLAGS=-g --std=c++11 -DASIO_STANDALONE -I"$(CURDIR)" -I"$(CURDIR)/lib/asio-1.10.6/include" $(OFLAG) $(DBG_FLAGS)
+CXXFLAGS=-g --std=c++11 -I"$(CURDIR)" -I"$(CURDIR)/lib/asio-1.10.6/include" $(OFLAG) $(DBG_FLAGS)
 DBG_FLAGS=
 LDFLAGS=-lportaudio -lsndfile
 

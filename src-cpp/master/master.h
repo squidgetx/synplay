@@ -53,9 +53,9 @@ class Master
     void send_data(asio::ip::udp::endpoint& remote_endpt, asio::const_buffer& buf, /* debugging */ uint64_t &sent);
     void send_data();
 
-    void send_timesync(asio::ip::udp::endpoint& remote_endpt);
+    void send_timesync(asio::ip::udp::endpoint& remote_endpt, int16_t attempt = 0);
     void send_timesync();
-    void receive_timesync_reply(asio::ip::udp::endpoint& remote_endpt);
+    void receive_timesync_reply(asio::ip::udp::endpoint& remote_endpt, int16_t attempt);
 };
 
 #endif
