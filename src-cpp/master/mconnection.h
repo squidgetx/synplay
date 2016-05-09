@@ -10,6 +10,7 @@ typedef enum {
 
 typedef struct mconnection {
   asio::deadline_timer timer;
+  MConnectionState state;
   MConnection() {
     timer = NULL;
     state = NAKED;
