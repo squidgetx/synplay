@@ -42,6 +42,7 @@ void Master::receive_everything() {
       [this,remote_endpt](error_code e, size_t bytes_recvd) {
         // immediately grab the receipt time
         mtime_t from_recv = get_millisecond_time();
+        std::cerr << "got packet" << std::endl;
 
         // unpack the time packet
         Packet * p = Packet::unpack(tp_buffer, bytes_recvd);
@@ -244,6 +245,7 @@ void Master::send_data(){
 }
 
 void Master::run(){
+  receive_everything();
   send_timesync();
 
   while (!isDone)
