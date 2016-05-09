@@ -6,7 +6,8 @@ struct MConnection {
     NAKED = 0,
     SENT_INITIAL_TIMESYNC = 1,
     SENT_FINAL_TIMESYNC = 2,
-    SENDING_DATA = 3
+    PENDING_ALL_SYNCED = 3,
+    SENDING_DATA = 4
   };
   int attempts;
   asio::deadline_timer *timer;

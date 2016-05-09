@@ -61,6 +61,8 @@ void Master::receive_everything() {
         // Reset attempts
         cxn->attempts = 0;
 
+        bool continueReceive = true;
+
         switch (cxn->state) {
           case NAKED:
             // No one should send to us
@@ -80,16 +82,33 @@ void Master::receive_everything() {
             break;
           case SENT_FINAL_TIMESYNC:
             // Got the reply to the final timesync
-            cxn->state = SENDING_DATA;
+            cxn->state = PENDING_ALL_SYNCED;
+            synced++;
+            if (synced == connections.size()) {
+              // All cxns are pending all synced!
+              for (auto& kv : connections) {
+                // Sanity check: make sure that all the states are indeed
+                // PENDING_ALL_SYNCED
+                check_or_die(kv.second.state == PENDING_ALL_SYNCED);
+                kv.second.state = SENDING_DATA;
+              }
+              sendData();
+              continueReceive = false;
+            }
+            break;
+          case PENDING_ALL_SYNCED:
+            // Shouldn't be getting any packets in this state
             break;
           case SENDING_DATA:
             // Shouldn't be getting any packets in this state
             break;
           default:
+            // Shouldn't be getting any packets in this state
             break;
 
         }
-        receive_everything();
+        if (continueReceive) 
+          receive_everything();
       }
 }
 
@@ -178,6 +197,7 @@ void Master::send_final_timesync(asio::ip::udp::endpoint& remote_endpt, TPacket 
 }
 
 void Master::send_data(std::shared_ptr<udp::endpoint> remote_endpt, asio::const_buffer& buf){
+
   socket.async_send_to(asio::buffer(buf), *remote_endpt,
     [this](error_code ec, size_t /*bytes_sent*/){
       // QUESTION: this sends more to everyone in the callback for
