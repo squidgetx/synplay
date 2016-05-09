@@ -60,6 +60,8 @@ class Master
     void receive_initial_timesync_reply(asio::ip::udp::endpoint& remote_endpt, int16_t attempt);
     void receive_final_timesync_reply(asio::ip::udp::endpoint& remote_endpt, TPacket *tp, int16_t attempt);
 
+    void receive_everything();
+
     template <typename WriteHandler>
 asio::deadline_timer *start_timer(asio::ip::udp::endpoint& remote_endpt, int16_t attempt, WriteHandler handler);
 };

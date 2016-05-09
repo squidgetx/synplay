@@ -8,11 +8,11 @@ struct MConnection {
     SENT_FINAL_TIMESYNC = 2,
     SENDING_DATA = 3
   };
-
+  int attempts;
   asio::deadline_timer *timer;
   MConnectionState state;
 
-  MConnection() : state(NAKED), timer(nullptr) {};
+  MConnection() : state(NAKED), timer(nullptr), attempts(0) {};
 };
 
 #endif
