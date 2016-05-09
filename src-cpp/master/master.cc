@@ -43,6 +43,11 @@ void Master::receive_everything() {
         // immediately grab the receipt time
         mtime_t from_recv = get_millisecond_time();
 
+        // unpack the time packet
+        Packet * p = Packet::unpack(tp_buffer, bytes_recvd);
+        check_or_die(p->get_type() == PacketType::TIME);
+        TPacket * tp = static_cast<TPacket *> (p);
+
         // Demultiplex
         MConnection cxn = connections[remote_endpt];
 
@@ -53,10 +58,8 @@ void Master::receive_everything() {
           cxn->timer = NULL;
         }
 
-        // unpack the time packet
-        Packet * p = Packet::unpack(tp_buffer, bytes_recvd);
-        check_or_die(p->get_type() == PacketType::TIME);
-        TPacket * tp = static_cast<TPacket *> (p);
+        // Reset attempts
+        cxn->attempts = 0;
 
         switch (cxn->state) {
           case NAKED:
@@ -75,12 +78,7 @@ void Master::receive_everything() {
 
             cxn->state = SENT_FINAL_TIMESYNC;
             this->send_final_timesync(remote_endpt, tp, cxn);
-            // Set timer
-            asio::deadline_timer *timer = this->start_timer(remote_endpt, [this,&remote_endpt](){
-                  this->send_final_timesync(remote_endpt, cxn);
-            });
-            cxn->timer = timer;
-            break;
+                        break;
           case SENT_FINAL_TIMESYNC:
             // Got the reply to the final timesync
             break;
@@ -123,6 +121,16 @@ asio::deadline_timer *Master::start_timer(asio::ip::udp::endpoint& remote_endpt,
 
 void Master::send_initial_timesync(udp::endpoint& remote_endpt, MConnection cxn) {
 
+  asio::deadline_timer *timer = this->start_timer(remote_endpt, [this,&remote_endpt](){
+        this->send_initial_timesync(remote_endpt, cxn);
+  });
+
+  if (cxn->timer != NULL) {
+    cxn->timer->cancel();
+    delete cxn->timer;
+  }
+  cxn->timer = timer;
+
   if (cxn->attempts > 2) {
     cerr << "send_initial_timesync give up on: " << remote_endpt << endl;
     return;
@@ -135,75 +143,39 @@ void Master::send_initial_timesync(udp::endpoint& remote_endpt, MConnection cxn)
   TPacket tp;
   tp.from_sent = get_millisecond_time();
 
-  socket.async_send_to(asio::buffer(tp.pack()),remote_endpt, NULL);
+  socket.async_send_to(asio::buffer(tp.pack()), remote_endpt, NULL);
 }
 
-void Master::receive_initial_timesync_reply(udp::endpoint& remote_endpt, int16_t attempt) {
+void Master::send_final_timesync(asio::ip::udp::endpoint& remote_endpt, TPacket *tp, MConnection cxn){
+    
+    // Send the final timesync and start a timer
 
-  asio::deadline_timer *timer = this->start_timer(remote_endpt, attempt, [this,&remote_endpt,attempt](){
-      this->send_initial_timesync(remote_endpt, attempt + 1);
+    asio::deadline_timer *timer = this->start_timer(remote_endpt, [this,&remote_endpt](){
+          this->send_final_timesync(remote_endpt, tp, cxn);
     });
+    if (cxn->timer != NULL) {
+      cxn->timer->cancel();
+      delete cxn->timer;
+    }
+    cxn->timer = timer;
 
-  socket.async_receive_from(
-      asio::buffer(this->tp_buffer, TP_BUFFER_SIZE), remote_endpt,
-      [this,&remote_endpt,timer](error_code e, size_t bytes_recvd){
-        // calculate sum shit
-        timer->cancel();
-        delete timer;
+    if (cxn->attempts > 2){
+      cerr << "send_final_timesync give up on: " << remote_endpt << endl;
+      return;
+    } else {
+      cerr << "send_final_timesync remote_endpt = " << remote_endpt << ", attempt = " << cxn->attempts << endl;
+    }
 
-        // immediately grab the receipt time
-        mtime_t from_recv = get_millisecond_time();
-        // unpack the time packet
-        Packet * p = Packet::unpack(tp_buffer, bytes_recvd);
-        check_or_die(p->get_type() == PacketType::TIME);
-        TPacket * tp = static_cast<TPacket *> (p);
-        tp->from_recvd = from_recv;
-        tp->tp_type = COMPLETE;
+    cxn->attempts++;
 
-        // calculate the offset
-        mtime_offset_t offset = ((static_cast<mtime_offset_t> (tp->to_recvd) - static_cast<mtime_offset_t> (tp->from_sent)) + (static_cast<mtime_offset_t> (tp->to_sent) - static_cast<mtime_offset_t> (tp->from_recvd)))/2;
-        tp->offset = offset;
-
-        // attempt to send the final timesync (with the offset calculated).
-        this->send_final_timesync(remote_endpt,tp);
-      }
-  );
-}
-
-void Master::send_final_timesync(asio::ip::udp::endpoint& remote_endpt, TPacket *tp, int16_t attempt){
-
-
-  if (attempt > 2){
-    cerr << "send_final_timesync give up on: " << remote_endpt << endl;
-    return;
-  } else {
-    cerr << "send_final_timesync remote_endpt = " << remote_endpt << ", attempt = " << attempt << endl;
-  }
-
-  // and send the reply
-  socket.async_send_to(
+    // and send the reply
+    socket.async_send_to(
       asio::buffer(tp->pack()), remote_endpt,
       [this,&remote_endpt,tp,attempt](error_code, size_t) {
         // reply sent...
-        // do we need timeouts on this shit
-        this->receive_final_timesync_reply(remote_endpt,tp,attempt);
       }
     );
 }
-
-void Master::receive_final_timesync_reply(asio::ip::udp::endpoint& remote_endpt, TPacket *tp, int16_t attempt){
-  asio::deadline_timer *timer = this->start_timer(remote_endpt, attempt, [this,&remote_endpt,tp,attempt](){
-      this->send_final_timesync(remote_endpt, tp, attempt + 1);
-    });
-
-  socket.async_receive_from(
-      asio::buffer(this->tp_buffer, TP_BUFFER_SIZE), remote_endpt,
-      [this,&remote_endpt,timer](error_code e, size_t bytes_recvd){
-          timer->cancel();
-          delete timer;
-      });
-}
-
 
 void Master::send_data(std::shared_ptr<udp::endpoint> remote_endpt, asio::const_buffer& buf){
   socket.async_send_to(asio::buffer(buf), *remote_endpt.get(),
