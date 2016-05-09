@@ -107,7 +107,7 @@ void Master::send_data(){
     stream_start = get_millisecond_time() + STREAM_OFFSET;
   }
 
-  sf_count_t num_read = file.read (data_buffer, MPacket::FRAMES_PER_PACKET*MPacket::FRAME_SIZE) ;
+  sf_count_t num_read = file.read (data_buffer, SAMPLES_PER_PACKET) ;
 
   if (!num_read){
     isDone = true;
@@ -115,8 +115,8 @@ void Master::send_data(){
   }
 
   mtime_t time = stream_start + (n_frames_sent * 1000) / SAMPLE_RATE;
-  n_frames_sent += MPacket::FRAMES_PER_PACKET;
-  MPacket mp(time, data_buffer, MPacket::PACKET_SHORT_SIZE);
+  n_frames_sent += FRAMES_PER_PACKET;
+  MPacket mp(time, data_buffer, SAMPLES_PER_PACKET);
   std::cerr << "sending ";
   mp.print();
 
