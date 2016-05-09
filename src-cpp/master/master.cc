@@ -78,7 +78,7 @@ void Master::receive_everything() {
                 static_cast<mtime_offset_t> (tp->from_sent)) +
                (static_cast<mtime_offset_t> (tp->to_sent) -
                 static_cast<mtime_offset_t> (tp->from_recvd)))/2;
-            tp->offset = 0;//offset;
+            tp->offset = offset;
 
             this->send_final_timesync(*remote_endpt, tp, cxn);
             break;
