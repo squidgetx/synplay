@@ -16,6 +16,7 @@
 #include "master/mconnection.h"
 
 #define TP_BUFFER_SIZE (2 + 5 * 8)
+#define NTP_ROUNDS 10
 
 class Master
 {

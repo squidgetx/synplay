@@ -10,10 +10,11 @@ struct MConnection {
     SENDING_DATA = 4
   };
   int attempts;
+  int sync_rounds;
   asio::deadline_timer *timer;
   MConnectionState state;
 
-  MConnection() : state(NAKED), timer(nullptr), attempts(0) {};
+  MConnection() : state(NAKED), timer(nullptr), attempts(0), sync_rounds(0) {};
 };
 
 #endif

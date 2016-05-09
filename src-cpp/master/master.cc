@@ -78,13 +78,18 @@ void Master::receive_everything() {
                 static_cast<mtime_offset_t> (tp->from_sent)) +
                (static_cast<mtime_offset_t> (tp->to_sent) -
                 static_cast<mtime_offset_t> (tp->from_recvd)))/2;
-            tp->offset = offset;
+            tp->offset = 0;//offset;
 
             this->send_final_timesync(*remote_endpt, tp, cxn);
             break;
           }
           case MConnection::SENT_FINAL_TIMESYNC:
             // Got the reply to the final timesync
+            cxn.sync_rounds++;
+            if (cxn.sync_rounds < NTP_ROUNDS) {
+              send_initial_timesync(*remote_endpt, cxn);
+              break;
+            }
             cxn.state = MConnection::PENDING_ALL_SYNCED;
             synced++;
             if (synced == connections.size()) {
